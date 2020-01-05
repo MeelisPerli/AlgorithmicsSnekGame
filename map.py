@@ -31,11 +31,7 @@ class Map():
             snake.init(x, y)
 
         # adding food to the map
-        while nOfFood > 0:
-            x = random.randint(1, self.x - 1)
-            y = random.randint(1, self.y - 1)
-            self.grid[x][y] = 2
-            nOfFood -= 1
+        self.addFood(nOfFood)
 
         self.deadSnakes = []
 
@@ -55,6 +51,13 @@ class Map():
         if len(alive) > 0:
             return None
         return self.deadSnakes
+
+    def addFood(self, n):
+        while n > 0:
+            x = random.randint(1, self.x - 1)
+            y = random.randint(1, self.y - 1)
+            self.grid[x][y] = 2
+            n -= 1
 
     def drawGrid(self, screen, xOnScreen=0, yOnScreen=0):
         for y in range(self.y):

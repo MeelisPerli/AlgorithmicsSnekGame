@@ -87,7 +87,7 @@ class Snake():
 
         # food check
         if grid.at(x, y) == 2:
-            self._grow()
+            self._grow(grid)
 
         # moves the snake's tail in front
         part = self.parts.pop()
@@ -106,10 +106,11 @@ class Snake():
         return False
 
     # Makes the snek big
-    def _grow(self):
+    def _grow(self, grid):
         self.parts.append(self.parts[-1])
         self.lifeSpan += 50
         self.size += 1
+        grid.addFood(1)
 
     def draw(self, screen, gridX, gridY, cellSize):
         for x, y in self.parts:
