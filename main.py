@@ -16,7 +16,7 @@ screen = pygame.display.set_mode((800, 600))
 done = False
 m = Map(200, 200, 2)
 testSnakes = [Snake() for _ in range(200)]
-m.nextRound(testSnakes)
+m.nextRound(testSnakes, 100)
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

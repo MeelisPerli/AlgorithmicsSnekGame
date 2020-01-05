@@ -17,18 +17,25 @@ class Map():
         self.cellSize = cellSize
         self._initialize_grid()
 
-    def nextRound(self, snakes):
+    def nextRound(self, snakes, nOfFood):
         self.aliveSnakes = snakes
 
         # letting the snakes loose
         for snake in self.aliveSnakes:
             # no do-while loop in python :(
             while True:
-                x = random.randint(1, self.x-1)
-                y = random.randint(1, self.y-1)
+                x = random.randint(1, self.x - 1)
+                y = random.randint(1, self.y - 1)
                 if self.at(x, y) == 0:
                     break
             snake.init(x, y)
+
+        # adding food to the map
+        while nOfFood > 0:
+            x = random.randint(1, self.x - 1)
+            y = random.randint(1, self.y - 1)
+            self.grid[x][y] = 2
+            nOfFood -= 1
 
         self.deadSnakes = []
 
@@ -52,9 +59,14 @@ class Map():
     def drawGrid(self, screen, xOnScreen=0, yOnScreen=0):
         for y in range(self.y):
             for x in range(self.x):
-                pygame.draw.rect(screen, (255, 255, 255),
-                                 pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
-                                             self.cellSize, self.cellSize))
+                if self.at(x, y) == 0:
+                    pygame.draw.rect(screen, (255, 255, 255),
+                                     pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
+                                                 self.cellSize, self.cellSize))
+                if self.at(x, y) == 2:
+                    pygame.draw.rect(screen, (0, 255, 0),
+                                     pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
+                                                 self.cellSize, self.cellSize))
 
         for snake in self.aliveSnakes:
             snake.draw(screen, xOnScreen, yOnScreen, self.cellSize)
