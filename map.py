@@ -44,12 +44,12 @@ class Map():
     def sitrep(self, snake):
         # access head
         head = snake.parts[-1]
-        print([self.safeAt(head[0]-1, head[1]),
-               self.safeAt(head[0]+1, head[1]),
-               self.safeAt(head[0], head[1]-1),
-               self.safeAt(head[0], head[1]+1),
-               *self.closestFood(*head),
-               snake.size])
+        # print([self.safeAt(head[0]-1, head[1]),
+        #        self.safeAt(head[0]+1, head[1]),
+        #        self.safeAt(head[0], head[1]-1),
+        #        self.safeAt(head[0], head[1]+1),
+        #        *self.closestFood(*head),
+        #        snake.size])
         return [self.safeAt(head[0]-1, head[1]),
                 self.safeAt(head[0]+1, head[1]),
                 self.safeAt(head[0], head[1]-1),
@@ -70,7 +70,6 @@ class Map():
             # look at horizontal sides
             if self.isInGrid(x - i, y - i) and self.isInGrid(x - i, y + i):
                 for nx, ny in zip([x - i] * len(spiral), spiral):
-                    print(nx, ny)
                     if self.safeAt(nx, ny) == 2:
                         return x - nx, y - ny
 
