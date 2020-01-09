@@ -1,17 +1,26 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from collections import deque
+import numpy as np
 import random
 import pygame
 
+def softmaxer(inp):
+    e = np.exp(inp - np.max(inp))
+    return e / np.sum(e)
 
 class Snake():
 
-    def __init__(self, brain=None):
+    def __init__(self,
+                 brain = None,
+                 loss_fun = 'mean_squared_error',
+                 opt = 'adam',
+                 metrics = ['accuracy']):
         if brain is None:
-            self.brain = None  # self._createNewBrain()
+            self.model = self._createNewBrain()
         else:
-            self.brain = brain
+            self.model = Sequential(layers = brain)
+            self.model.compile(loss = loss_fun, optimizer = opt, metrics = metrics)
 
         self.parts = deque()
         self.lifeSpan = 0
@@ -31,31 +40,31 @@ class Snake():
         self.lastDir = 0
         self.size = initialLen
 
-    def swapBrain(self, newBrain):
-        self.brain = newBrain
-
-    def getBrain(self):
-        return self.brain
-
-    # TODO: improve the neural network
     def _createNewBrain(self):
         model = Sequential()
-        model.add(Dense(12, input_dim=8, activation='relu'))
-        model.add(Dense(8, activation='relu'))
-        model.add(Dense(4, activation='sigmoid'))
+        model.add(Dense(12, input_dim = 1, activation = 'relu'))
+        model.add(Dense(8, input_dim = 12, activation = 'relu'))
+        model.add(Dense(1, activation = 'sigmoid'))
         model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
         return model
 
     # Returns if the snake is still alive.
-    # TODO replace the random movement with outputs from the model
-    def step(self, grid):
+    def step(self, sitrep, grid):
         if not self.alive:
             return False
         elif self.lifeSpan <= 0:
             return False
 
-        direction = random.randint(0, 3)
-        self._move(direction, grid)
+        #### TODO: input tuning
+        #### right now:
+        # sitrep = [(item (0, 1, 2) at:) left, up, right, down,
+        #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
+        # ... total 7 elements
+        pred = self.model.predict(sitrep)
+        self._move(np.argmax((softmaxer( pred[[ 0, 4, 5, 6 ]] ),
+                              softmaxer( pred[[ 1, 4, 5, 6 ]] ),
+                              softmaxer( pred[[ 2, 4, 5, 6 ]] ),
+                              softmaxer( pred[[ 3, 4, 5, 6 ]] ))), grid)
 
         return True
 
@@ -111,6 +120,26 @@ class Snake():
         self.lifeSpan += 50
         self.size += 1
         grid.addFood(1)
+
+    # convinience methods for accessing models and weights.
+    def swapBrain(self, newBrain):
+        self.model = newBrain
+
+    def getBrain(self):
+        return self.model
+
+    def setGenes(self, genes, biases):
+        for i in range(len( self.model.layers )):
+            self.model.layers[i].set_weights([ genes[i], biases[i] ])
+
+    def genes(self):
+        return [layer.get_weights()[0] for layer in self.model.layers]
+
+    def biases(self):
+        return [layer.get_weights()[1] for layer in self.model.layers]
+
+    def configs(self):
+        return [layer.get_configs() for layer in self.model.layers]
 
     def draw(self, screen, gridX, gridY, cellSize):
         for x, y in self.parts:
