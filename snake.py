@@ -16,11 +16,9 @@ class Snake():
                  loss_fun = 'mean_squared_error',
                  opt = 'adam',
                  metrics = ['accuracy']):
-        if brain is None:
-            self.model = self._createNewBrain()
-        else:
-            self.model = Sequential(layers = brain)
-            self.model.compile(loss = loss_fun, optimizer = opt, metrics = metrics)
+
+        self.model = Sequential(layers = brain)
+        self.model.compile(loss = loss_fun, optimizer = opt, metrics = metrics)
 
         self.parts = deque()
         self.lifeSpan = 0
@@ -28,7 +26,7 @@ class Snake():
         self.lastDir = 0
         self.size = 0
 
-    def init(self, x, y, initialLen=3, lifeSpan=300):
+    def init(self, x, y, initialLen=3, lifeSpan=100):
         # Using a deque to store snake's parts
         # First element is the head.
         self.parts = deque()
@@ -40,19 +38,12 @@ class Snake():
         self.lastDir = 0
         self.size = initialLen
 
-    def _createNewBrain(self):
-        model = Sequential()
-        model.add(Dense(12, input_dim = 1, activation = 'relu'))
-        model.add(Dense(8, input_dim = 12, activation = 'relu'))
-        model.add(Dense(1, activation = 'sigmoid'))
-        model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-        return model
-
     # Returns if the snake is still alive.
     def step(self, sitrep, grid):
         if not self.alive:
             return False
         elif self.lifeSpan <= 0:
+            self.alive = False
             return False
 
         #### TODO: input tuning
@@ -61,10 +52,7 @@ class Snake():
         #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
         # ... total 7 elements
         pred = self.model.predict(sitrep)
-        self._move(np.argmax((softmaxer( pred[[ 0, 4, 5, 6 ]] ),
-                              softmaxer( pred[[ 1, 4, 5, 6 ]] ),
-                              softmaxer( pred[[ 2, 4, 5, 6 ]] ),
-                              softmaxer( pred[[ 3, 4, 5, 6 ]] ))), grid)
+        self._move(np.argmax(pred), grid)
 
         return True
 
@@ -74,6 +62,7 @@ class Snake():
     # 2: down
     # 3: left
     def _move(self, dir, grid):
+        self.lifeSpan -= 1
         x = self.parts[0][0]
         y = self.parts[0][1]
         self.lastDir = dir

@@ -14,28 +14,59 @@ from snake import *
 
 pygame.init()
 screen = pygame.display.set_mode((420, 420))
-done = False
-m = Map(100, 100, 4)
 
-# you can change the input model here,
-# or define new standard in Snake._createNewBrain()
+# you can change the input model here, but keep the input_shape as (7,)
+# and final layer output as 4 or whatever you have as dimensions.
 # extra params for Snake in compilation:
 #  - loss_fun
 #  - opt
 #  - metrics
 model = [
-    Dense(12, input_dim = 1, activation = 'relu'),
-    Dense(8, input_dim = 12, activation = 'relu'),
-    Dense(1, activation = 'sigmoid')
+    Dense(14, input_shape = (7,), activation = 'relu'),
+    Dense(9, input_dim = 7, activation = 'relu'),
+    Dense(4, activation = 'softmax')
 ]
 
-testSnakes = [Snake(brain = model) for _ in range(1)]
-m.nextRound(testSnakes, 50)
-while not done:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
+i = 0
+reallydone = False
+testSnakes = [Snake(brain = model) for _ in range(5)]
+while not reallydone:
+    print("iteration", i, end = '\n')
 
-    pygame.display.flip()
-    deadSnakes = m.update()
-    m.drawGrid(screen, 10, 10)
+    m = Map(100, 100, 4)
+    m.nextRound(testSnakes, 10)
+    testSnakes = None
+    done = False
+
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done, reallydone = True, True
+
+        pygame.display.flip()
+        # if all dead, returns the list of dead snakes
+        # and terminates the game list
+        testSnakes = m.update()
+        if testSnakes != None:
+            done = True
+        m.drawGrid(screen, 10, 10)
+
+    # TODO:
+    # play with dead snakes
+    sizetable, maxsize, minsize = [], 0, np.inf
+    n = 0
+    for snake in testSnakes:
+        sizetable.append([snake.size, snake])
+        if snake.size > maxsize:
+            maxsize = snake.size
+        if snake.size < minsize:
+            minsize = snake.size
+
+        n += 1
+        print(n, "-th snake had size: ", snake.size)
+
+    testSnakes = [Snake(brain = model) if snake.size == minsize else snake for snake in testSnakes ]
+
+    i += 1
+    if i > 100:
+        reallydone = True

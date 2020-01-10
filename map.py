@@ -3,7 +3,6 @@ import random
 import numpy as np
 from snake import *
 
-
 # tile info:
 # 0: empty tile
 # 1: snake
@@ -39,59 +38,46 @@ class Map():
     def _initialize_grid(self):
         self.grid = [[0] * self.x for i in range(self.y)]
 
-    # TODO: function for creating model inputs from the map
-    # relative to the snake.
     def sitrep(self, snake):
         # access head
-        head = snake.parts[-1]
-        # print([self.safeAt(head[0]-1, head[1]),
-        #        self.safeAt(head[0]+1, head[1]),
-        #        self.safeAt(head[0], head[1]-1),
-        #        self.safeAt(head[0], head[1]+1),
-        #        *self.closestFood(*head),
-        #        snake.size])
-        return [self.safeAt(head[0]-1, head[1]),
+        head = snake.parts[0]
+        return [[self.safeAt(head[0]-1, head[1]),
                 self.safeAt(head[0]+1, head[1]),
                 self.safeAt(head[0], head[1]-1),
                 self.safeAt(head[0], head[1]+1),
                 *self.closestFood(*head),
-                snake.size]
+                snake.size]]
 
-    # spiraling out algorithm for finding closest food tile
+    # spiraling out algorithm (sorta) for finding closest food tile to x, y
     def closestFood(self, x, y):
-        for i in range(0, np.max([self.x, self.y])):
+        for i in range(1, np.max((self.x, self.y))):
             # interweave horizontal sides
-            a = np.arange(y, y - i, -1)
-            b = np.arange(y + 1, y + i)
-            spiral = np.empty((a.size + b.size,), dtype = int)
-            spiral[0::2] = a
-            spiral[1::2] = b
+            spiral = np.empty((i * 2 - 1, ), dtype = int)
+            spiral[0::2] = np.arange(y, y - i, -1)
+            spiral[1::2] = np.arange(y + 1, y + i)
 
-            # look at horizontal sides
-            if self.isInGrid(x - i, y - i) and self.isInGrid(x - i, y + i):
+            # look at horizontal sides (and check if both points are still in grid)
+            if self.isInGrid(x - i, y - i) or self.isInGrid(x - i, y + i):
                 for nx, ny in zip([x - i] * len(spiral), spiral):
                     if self.safeAt(nx, ny) == 2:
                         return x - nx, y - ny
 
-            if self.isInGrid(x + i, y - i) and self.isInGrid(x + i, y + i):
+            if self.isInGrid(x + i, y - i) or self.isInGrid(x + i, y + i):
                 for nx, ny in zip([x + i] * len(spiral), spiral):
                     if self.safeAt(nx, ny) == 2:
                         return x - nx, y - ny
 
             # interweave vertical sides
-            a = np.arange(x, x - i, -1)
-            b = np.arange(x + 1, x + i)
-            spiral = np.empty((a.size + b.size,), dtype = int)
-            spiral[0::2] = a
-            spiral[1::2] = b
+            spiral[0::2] = np.arange(x, x - i, -1)
+            spiral[1::2] = np.arange(x + 1, x + i)
 
             # look at vertical sides
-            if self.isInGrid(x - i, y - i) and self.isInGrid(x + i, y - i):
+            if self.isInGrid(x - i, y - i) or self.isInGrid(x + i, y - i):
                 for nx, ny in zip(spiral, [y - i] * len(spiral)):
                     if self.safeAt(nx, ny) == 2:
                         return x - nx, y - ny
 
-            if self.isInGrid(x - i, y + i) and self.isInGrid(x + i, y + i):
+            if self.isInGrid(x - i, y + i) or self.isInGrid(x + i, y + i):
                 for nx, ny in zip(spiral, [y + i] * len(spiral)):
                     if self.safeAt(nx, ny) == 2:
                         return x - nx, y - ny
