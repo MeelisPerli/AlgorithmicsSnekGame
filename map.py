@@ -104,6 +104,7 @@ class Map():
         self.aliveSnakes = alive
         if len(alive) > 0:
             return None
+
         return self.deadSnakes
 
     def addFood(self, n):

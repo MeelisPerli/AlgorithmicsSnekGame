@@ -3,6 +3,7 @@ import numpy as np
 from snake import Snake
 import random
 from typing import List, Tuple
+from matrixoperations import *
 
 '''
 Genetic algorithm will find suitable weights to the neural network
@@ -13,93 +14,84 @@ Each snek has its own NN weights
 
 class GeneticAlgorithm:
 
-    def __init__(self, population):
-        self.population = population
-
-    def mutate_snakes(self, top_n: int, keep_n: int, new_n: int, mutation_probability: float) -> None:
+    def mutate_snakes(self, dead_snakes: [Snake], top_n: int, children: int,
+                      mutation_probability: float) -> None:
         """
         Evolves the snakes
+        :param dead_snakes: snakes of the previous generation
         :param top_n: Top n that will be used to crate new snakes
-        :param keep_n: Top n snakes that will not be modified
+        :param children: number of children per pair of parents
         :param mutation_probability: Probability to a gene to be mutated
         :return: Nothing
         """
         print("evolving")
+        self.population = dead_snakes
         ranked_snakes = sorted([(self.calculate_fitness(snek), snek) for snek in self.population],
                                key=lambda tup: tup[0])
-        ranked_snakes.reverse()
-        snakes_to_keep = ranked_snakes[:keep_n]
-        parent_snakes = ranked_snakes[:top_n]
-        child_snakes = ranked_snakes[keep_n:len(ranked_snakes) - new_n]
-        new_snakes = ranked_snakes[len(ranked_snakes) - keep_n - new_n:]
-        i = 0
-        j = 0
 
-        for _ in range(int(top_n / 2)):
+        ranked_snakes.reverse()
+        parent_snakes = ranked_snakes[:top_n]
+        child_snakes = ranked_snakes[top_n:top_n + children * top_n // 2]
+        new_snakes = ranked_snakes[top_n + children * top_n // 2:]
+        if len(parent_snakes) + len(child_snakes) + len(new_snakes) != len(dead_snakes):
+            raise RuntimeError
+
+        k = 0
+        for i in range(0, top_n // 2, 2):
             _, parent1 = parent_snakes[i]
             _, parent2 = parent_snakes[i + 1]
 
-            for _ in range(int(len(child_snakes) / len(parent_snakes))):
-                _, child1 = child_snakes[j]
-                _, child2 = child_snakes[j + 1]
-                j += 2
-                self.crossover(parent1, child1, parent2, child2)
-            i += 2
+            for j in range(children):
+                self.crossover(parent1, parent2, child_snakes[j + k][1]).genes()
+
+            k += children
 
         self.create_new_snakes(new_snakes)
 
         self.mutate(mutation_probability)
         print("Longest snake " + str(ranked_snakes[0][0]))
 
-    def crossover(self, parent_snake1: Snake, child1: Snake, parent_snake2: Snake, child2: Snake) -> None:
+    def crossover(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake) -> Snake:
         """
         Creates new weights for two childs
         :param parent_snake1: First parent snake
-        :param child1: Child that gets some new genes
         :param parent_snake2: Second parent snake
-        :param child2: Child that gets some new genes
+        :param child: Child that get some new genes
         :return: Nothing
         """
+
         parent_genes1 = mat_to_vector(parent_snake1.genes())
-        child_genes1 = mat_to_vector(child1.genes())
         parent_genes2 = mat_to_vector(parent_snake2.genes())
-        child_genes2 = mat_to_vector(child2.genes())
+        child_genes = mat_to_vector(child.genes())
 
         for i in range(len(parent_genes1[0])):
 
             choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_genes1[0][i] = parent_genes2[0][i]
-                child_genes2[0][i] = parent_genes1[0][i]
+                child_genes[0][i] = parent_genes2[0][i]
             if choice == 2:
-                child_genes1[0][i] = parent_genes1[0][i]
-                child_genes2[0][i] = parent_genes2[0][i]
+                child_genes[0][i] = parent_genes1[0][i]
             else:
-                child_genes1[0][i] = random.uniform(-1, 1)
-                child_genes2[0][i] = random.uniform(-1, 1)
+                child_genes[0][i] = random.uniform(-1, 1)
 
         parent_biases1 = mat_to_vector(parent_snake1.biases())
-        child_biases1 = mat_to_vector(child1.biases())
         parent_biases2 = mat_to_vector(parent_snake2.biases())
-        child_biases2 = mat_to_vector(child2.biases())
+        child_biases = mat_to_vector(child.biases())
 
         for i in range(len(parent_biases1[0])):
-            choice = random.choice([1] * 45 + [2] * 45 + [3] * 20)
-
+            choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_biases1[0][i] = parent_biases2[0][i]
-                child_biases2[0][i] = parent_biases2[0][i]
-            elif choice == 2:
-                child_biases1[0][i] = parent_biases1[0][i]
-                child_biases2[0][i] = parent_biases2[0][i]
-            else:
-                child_biases1[0][i] = random.uniform(-1, 1)
-                child_biases2[0][i] = random.uniform(-1, 1)
+                child_biases[0][i] = parent_biases2[0][i]
 
-        child1.setGenes(vector_to_mat(child_genes1, parent_snake1.genes()),
-                        vector_to_mat(child_biases1, child1.biases()))
-        child2.setGenes(vector_to_mat(child_genes2, parent_snake2.genes()),
-                        vector_to_mat(child_biases2, child2.biases()))
+            elif choice == 2:
+                child_biases[0][i] = parent_biases1[0][i]
+
+            else:
+                child_biases[0][i] = random.uniform(-1, 1)
+
+        child.setGenes(vector_to_mat(child_genes, parent_snake1.genes()),
+                       vector_to_mat(child_biases, child.biases()))
+        return child
 
     def create_new_snakes(self, snakes: List[Tuple[int, Snake]]) -> None:
 
@@ -211,46 +203,3 @@ class GeneticAlgorithm:
         return snek.size
 
 
-def mat_to_vector(weights: List) -> np.ndarray:
-    """
-    Transform weights from list containing arrays to one vector
-    :param weights: list containing weights
-    :return: a numpy array
-    """
-    weights = np.asmatrix(weights)
-    weights_vec = []
-    for sol_idx in range(weights.shape[0]):
-        vector = []
-        for layer_idx in range(weights.shape[1]):
-            vector_weights = np.reshape(weights[sol_idx, layer_idx],
-                                        newshape=(weights[sol_idx, layer_idx].size))
-            vector.extend(vector_weights)
-        weights_vec.append(vector)
-    return np.array(weights_vec)
-
-
-def vector_to_mat(vector_weights, mat_weights):
-    """
-    Transforms vector back to its original shape
-    :param vector_weights: Weights in vector format
-    :param mat_weights: initial weights
-    :return: Weights in matrix format
-    """
-
-    mat_weights_new = []
-
-    for sol_idx in range(len(mat_weights)):
-        start = 0
-        end = 0
-        temp = []
-        for layer_idx in range(len(mat_weights[sol_idx])):
-            end = end + mat_weights[sol_idx][layer_idx].size
-
-            curr_vector = vector_weights[0][start:end]
-            mat_layer_weights = np.reshape(curr_vector, newshape=mat_weights[sol_idx][layer_idx].shape)
-            start = end
-            temp.append(mat_layer_weights)
-        temp = np.reshape(temp, newshape=mat_weights[sol_idx].shape)
-        mat_weights_new.append(temp)
-
-    return mat_weights_new

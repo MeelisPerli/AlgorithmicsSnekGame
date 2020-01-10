@@ -1,9 +1,10 @@
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, BatchNormalization, Input, Conv2D, MaxPooling2D, Flatten
 from collections import deque
 import numpy as np
 import random
 import pygame
-
+from matrixoperations import *
 
 def softmaxer(inp):
     e = np.exp(inp - np.max(inp))
@@ -12,9 +13,11 @@ def softmaxer(inp):
 
 class Snake():
 
-    def __init__(self, brain=None, ):
-
-        self.model = Sequential(layers=brain)
+    def __init__(self, brain=2):
+        if brain == 1:
+            self.brain1()
+        elif brain == 2:
+            self.brain2()
         self.parts = deque()
         self.lifeSpan = 0
         self.alive = False
@@ -32,6 +35,32 @@ class Snake():
         self.alive = True
         self.lastDir = 0
         self.size = initialLen
+
+    def brain1(self):
+        inp = Input((7,))
+        d1 = Dense(14, activation='relu')(inp)
+        d2 = Dense(9, activation='relu')(d1)
+        d3 = Dense(4, activation='softmax')(d2)
+        self.model = Sequential(input=inp, output=d3)
+
+    def brain2(self):
+        self.model = Sequential()
+        self.model.add(Input(shape=(5, 5, 1)))
+        self.model.add(Conv2D(5, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), trainable=False))
+        self.model.add(Flatten(trainable=False))
+        self.model.add(Dense(6, activation='relu'))
+        self.model.add(Dense(4, activation='softmax'))
+
+    # idk if this is required anymore
+    def randomize_weights(self):
+        w = self.genes()
+        v = mat_to_vector(w)
+
+        for i in range(len(v[0])):
+            v[0][i] = random.random()*2-1
+        nw = vector_to_mat(v, w)
+        self.setGenes(nw, self.biases())
 
     # Returns if the snake is still alive.
     def step(self, grid):
