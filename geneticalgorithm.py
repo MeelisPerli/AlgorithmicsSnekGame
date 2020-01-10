@@ -30,19 +30,18 @@ class GeneticAlgorithm:
         ranked_snakes.reverse()
         snakes_to_keep = ranked_snakes[:keep_n]
         parent_snakes = ranked_snakes[:top_n]
-        child_snakes = ranked_snakes[keep_n:len(ranked_snakes)-new_n]
-        new_snakes = ranked_snakes[len(ranked_snakes)-keep_n-new_n:]
+        child_snakes = ranked_snakes[keep_n:len(ranked_snakes) - new_n]
+        new_snakes = ranked_snakes[len(ranked_snakes) - keep_n - new_n:]
         i = 0
         j = 0
 
-        for _ in range(int(top_n/2)):
+        for _ in range(int(top_n / 2)):
             _, parent1 = parent_snakes[i]
-            _, parent2 = parent_snakes[i+1]
+            _, parent2 = parent_snakes[i + 1]
 
-            for _ in range(int(len(child_snakes)/len(parent_snakes))):
-
+            for _ in range(int(len(child_snakes) / len(parent_snakes))):
                 _, child1 = child_snakes[j]
-                _, child2 = child_snakes[j+1]
+                _, child2 = child_snakes[j + 1]
                 j += 2
                 self.crossover(parent1, child1, parent2, child2)
             i += 2
@@ -52,7 +51,7 @@ class GeneticAlgorithm:
         self.mutate(mutation_probability)
         print("Longest snake " + str(ranked_snakes[0][0]))
 
-    def crossover(self, parent_snake1: Snake,  child1: Snake, parent_snake2: Snake, child2: Snake) -> None:
+    def crossover(self, parent_snake1: Snake, child1: Snake, parent_snake2: Snake, child2: Snake) -> None:
         """
         Creates new weights for two childs
         :param parent_snake1: First parent snake
@@ -98,9 +97,9 @@ class GeneticAlgorithm:
                 child_biases2[0][i] = random.uniform(-1, 1)
 
         child1.setGenes(vector_to_mat(child_genes1, parent_snake1.genes()),
-                                   vector_to_mat(child_biases1, child1.biases()))
+                        vector_to_mat(child_biases1, child1.biases()))
         child2.setGenes(vector_to_mat(child_genes2, parent_snake2.genes()),
-                                   vector_to_mat(child_biases2, child2.biases()))
+                        vector_to_mat(child_biases2, child2.biases()))
 
     def create_new_snakes(self, snakes: List[Tuple[int, Snake]]) -> None:
 
@@ -114,9 +113,6 @@ class GeneticAlgorithm:
             for i in range(len(bias[0])):
                 bias[0][i] = random.uniform(-1, 1)
             snake.setGenes(vector_to_mat(genes, snake.genes()), vector_to_mat(bias, snake.biases()))
-
-
-
 
     def mutate_snakes1(self, top_n: int, keep_n: int, mutation_probability: float) -> None:
         """
@@ -133,16 +129,14 @@ class GeneticAlgorithm:
         parent_snakes = ranked_snakes[:top_n]
 
         for _, parent_snake in parent_snakes:
-            for i in range(int(len(self.population)/len(snakes_to_keep))):
-                _, child = ranked_snakes[-1-i]
+            for i in range(int(len(self.population) / len(snakes_to_keep))):
+                _, child = ranked_snakes[-1 - i]
                 self.crossover2(parent_snake, child)
 
         self.mutate(mutation_probability)
         print("Pikim uss " + str(ranked_snakes[0][0]))
 
-
-
-    def crossover1(self, parent_snake: Snake, child: Snake)-> None:
+    def crossover1(self, parent_snake: Snake, child: Snake) -> None:
         """
         Uses parent snake to modify one child snake weights
         :param parent_snake: Parent snake
@@ -151,15 +145,13 @@ class GeneticAlgorithm:
         """
         x = np.random.normal(0, 1, size=660)
         parent_genes = mat_to_vector(parent_snake.genes())
-        child_genes = parent_genes+((x-x.mean())/x.std()/5)[random.randint(0, len(x))-1]
+        child_genes = parent_genes + ((x - x.mean()) / x.std() / 5)[random.randint(0, len(x)) - 1]
 
         parent_biases = mat_to_vector(parent_snake.biases())
-        child_biases = parent_biases+((x-x.mean())/x.std()/5)[random.randint(0, len(x))-1]
+        child_biases = parent_biases + ((x - x.mean()) / x.std() / 5)[random.randint(0, len(x)) - 1]
 
         child.setGenes(vector_to_mat(child_genes, parent_snake.genes()),
-                                   vector_to_mat(child_biases, child.biases()))
-
-
+                       vector_to_mat(child_biases, child.biases()))
 
     def crossover2(self, parent_snake: Snake, child: Snake) -> None:
         """
@@ -175,7 +167,6 @@ class GeneticAlgorithm:
 
         child_genes = mat_to_vector(child.genes())
         for random_number1 in range(random_number2):
-
             child_genes[0][random_number1] = parent_genes[0][random_number1]
 
         parent_biases = mat_to_vector(parent_snake.biases())
@@ -184,7 +175,6 @@ class GeneticAlgorithm:
         random_number1 = random.randint(0, len(parent_biases))
         random_number2 = random.randint(random_number1, len(parent_biases))
         for random_number1 in range(random_number2):
-
             child_biases[0][random_number1] = parent_biases[0][random_number1]
 
         child.setGenes(vector_to_mat(child_genes, parent_snake.genes()), child.biases())
@@ -206,12 +196,11 @@ class GeneticAlgorithm:
                     vector_weights[i] = random.uniform(-1, 1)
                 snake.setGenes(vector_to_mat(vector_weights, brain), snake.biases())
 
-            for i in range(len(vector_bias)-1):
+            for i in range(len(vector_bias) - 1):
                 rand = random.random()
                 if rand < mutation_probability:
-
                     vector_bias[i] = random.uniform(-1, 1)
-                snake.setGenes(snake.genes(),vector_to_mat(vector_bias, snake.biases()))
+                snake.setGenes(snake.genes(), vector_to_mat(vector_bias, snake.biases()))
 
     def calculate_fitness(self, snek: Snake) -> int:
         """

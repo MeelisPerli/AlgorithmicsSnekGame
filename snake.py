@@ -1,31 +1,26 @@
-from keras.models import Sequential
-from keras.layers import Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 from collections import deque
 import numpy as np
 import random
 import pygame
 
+
 def softmaxer(inp):
     e = np.exp(inp - np.max(inp))
     return e / np.sum(e)
 
+
 class Snake():
 
-    def __init__(self,
-                 brain = None,
-                 loss_fun = 'mean_squared_error',
-                 opt = 'adam',
-                 metrics = ['accuracy']):
+    def __init__(self, brain=None,):
 
-        self.model = Sequential(layers = brain)
-        self.model.compile(loss = loss_fun, optimizer = opt, metrics = metrics)
-
+        self.model = Sequential(layers=brain)
         self.parts = deque()
         self.lifeSpan = 0
         self.alive = False
         self.lastDir = 0
         self.size = 0
-        self.starve = 200
 
     def init(self, x, y, initialLen=3, lifeSpan=100):
         # Using a deque to store snake's parts
@@ -38,25 +33,23 @@ class Snake():
         self.alive = True
         self.lastDir = 0
         self.size = initialLen
-        self.starve = 200
 
     # Returns if the snake is still alive.
     def step(self, sitrep, grid):
         if not self.alive:
             return False
         elif self.lifeSpan <= 0:
-            self.alive = False
-            return False
+            return self.die(grid)
 
         #### TODO: input tuning
         #### right now:
-        # sitrep = [(item (0, 1, 2) at:) left, up, right, down,
+        #  sitrep = [(item (0, 1, 2) at:) left, up, right, down,
         #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
         # ... total 7 elements
         # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
-        pred = self.model.predict(
-            np.asarray( sitrep ).reshape((1, 7))
-        )
+        # print([sitrep])
+        pred = self.model.predict([[sitrep]])
+
         self._move(np.argmax(pred), grid)
 
         return True
@@ -67,7 +60,6 @@ class Snake():
     # 2: down
     # 3: left
     def _move(self, dir, grid):
-        self.starve -= 1
         self.lifeSpan -= 1
         x = self.parts[0][0]
         y = self.parts[0][1]
@@ -85,17 +77,19 @@ class Snake():
         if (x, y) == self.parts[1]:
             return self._move((dir + 2) % 4, grid)
 
+        # removes the tail
+        part = self.parts.pop()
+        grid.grid[part[0]][part[1]] = 0
+
         # wall/snake part check
-        if not grid.isInGrid(x, y) or grid.at(x, y) == 1 or self.starve<=0:
+        if not grid.isInGrid(x, y) or grid.at(x, y) == 1:
             return self.die(grid)
 
         # food check
         if grid.at(x, y) == 2:
             self._grow(grid)
 
-        # moves the snake's tail in front
-        part = self.parts.pop()
-        grid.grid[part[0]][part[1]] = 0
+        # adds a new segment in front of the head
         part = (x, y)
         grid.grid[x][y] = 1
         self.parts.appendleft(part)
@@ -111,13 +105,12 @@ class Snake():
 
     # Makes the snek big
     def _grow(self, grid):
-        self.starve = 200
         self.parts.append(self.parts[-1])
         self.lifeSpan += 50
         self.size += 1
         grid.addFood(1)
 
-    # convinience methods for accessing models and weights.
+    #  convinience methods for accessing models and weights.
     def swapBrain(self, newBrain):
         self.model = newBrain
 
@@ -125,10 +118,10 @@ class Snake():
         return self.model
 
     def setGenes(self, genes, biases):
-        for i in range(len( self.model.layers )):
-            self.model.layers[i].set_weights([ genes[i], biases[i] ])
+        for i in range(len(self.model.layers)):
+            self.model.layers[i].set_weights([genes[i], biases[i]])
 
-    # the goto weight getter
+    #  the goto weight getter
     def genes(self):
         return [layer.get_weights()[0] for layer in self.model.layers]
 
