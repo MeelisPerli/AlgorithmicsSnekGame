@@ -1,5 +1,4 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
 from collections import deque
 import numpy as np
 import random
@@ -13,7 +12,7 @@ def softmaxer(inp):
 
 class Snake():
 
-    def __init__(self, brain=None,):
+    def __init__(self, brain=None, ):
 
         self.model = Sequential(layers=brain)
         self.parts = deque()
@@ -35,7 +34,7 @@ class Snake():
         self.size = initialLen
 
     # Returns if the snake is still alive.
-    def step(self, sitrep, grid):
+    def step(self, grid):
         if not self.alive:
             return False
         elif self.lifeSpan <= 0:
@@ -47,8 +46,14 @@ class Snake():
         #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
         # ... total 7 elements
         # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
-        print([sitrep])
-        pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
+
+        # Uncomment the next 2 lines, if u want to use the other snake
+        # sitrep = grid.sitrep((self))
+        # pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
+
+        # comment these 2 if you uncommented the previous 2 lines
+        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 2)
+        pred = self.model.predict([[sitrep]])
 
         self._move(np.argmax(pred), grid)
 
@@ -117,16 +122,21 @@ class Snake():
     def getBrain(self):
         return self.model
 
+    # It now takes into account only the trainable layers
     def setGenes(self, genes, biases):
-        for i in range(len(self.model.layers)):
-            self.model.layers[i].set_weights([genes[i], biases[i]])
+        c = 0
+        for layer in self.model.layers:
+            if not layer.get_config()['trainable']:
+                continue
+            layer.set_weights([genes[c], biases[c]])
+            c+= 1
 
     #  the goto weight getter
     def genes(self):
-        return [layer.get_weights()[0] for layer in self.model.layers]
+        return [layer.get_weights()[0] for layer in self.model.layers if layer.get_config()['trainable']]
 
     def biases(self):
-        return [layer.get_weights()[1] for layer in self.model.layers]
+        return [layer.get_weights()[1] for layer in self.model.layers if layer.get_config()['trainable']]
 
     def configs(self):
         return [layer.get_configs() for layer in self.model.layers]
