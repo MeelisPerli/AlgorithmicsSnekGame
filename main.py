@@ -1,5 +1,5 @@
-from keras.models import Sequential
-from keras.layers import Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 import pygame
 from map import *
 from snake import *
@@ -23,7 +23,7 @@ screen = pygame.display.set_mode((420, 420))
 #  - opt
 #  - metrics
 model = [
-    Dense(14, input_shape = (1,), activation = 'relu'),
+    Dense(14, input_shape = (7,), activation = 'relu'),
     Dense(9, input_dim = 7, activation = 'relu'),
     Dense(4, activation = 'softmax')
 ]
@@ -55,20 +55,6 @@ while not reallydone:
 
     # TODO:
     # play with dead snakes
-    sizetable, maxsize, minsize = [], 0, np.inf
-    n = 0
-    for snake in testSnakes:
-        sizetable.append([snake.size, snake])
-        if snake.size > maxsize:
-            maxsize = snake.size
-        if snake.size < minsize:
-            minsize = snake.size
-
-        n += 1
-        #print(n, "-th snake had size: ", snake.size)
-
-
-    testSnakes = [Snake(brain = model) if snake.size == minsize else snake for snake in testSnakes ]
 
     ga.mutate_snakes(3, 2, 1, 0.2)
 

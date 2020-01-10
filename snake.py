@@ -53,7 +53,10 @@ class Snake():
         # sitrep = [(item (0, 1, 2) at:) left, up, right, down,
         #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
         # ... total 7 elements
-        pred = self.model.predict(sitrep)
+        # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
+        pred = self.model.predict(
+            np.asarray( sitrep ).reshape((1, 7))
+        )
         self._move(np.argmax(pred), grid)
 
         return True
@@ -125,6 +128,7 @@ class Snake():
         for i in range(len( self.model.layers )):
             self.model.layers[i].set_weights([ genes[i], biases[i] ])
 
+    # the goto weight getter
     def genes(self):
         return [layer.get_weights()[0] for layer in self.model.layers]
 

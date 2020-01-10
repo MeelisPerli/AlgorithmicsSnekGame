@@ -6,7 +6,7 @@ from snake import *
 # tile info:
 # 0: empty tile
 # 1: snake
-# 2: food
+# -1: food
 
 # A grid based map.
 class Map():
@@ -41,12 +41,12 @@ class Map():
     def sitrep(self, snake):
         # access head
         head = snake.parts[0]
-        return [[self.safeAt(head[0]-1, head[1]),
+        return [self.safeAt(head[0]-1, head[1]),
                 self.safeAt(head[0]+1, head[1]),
                 self.safeAt(head[0], head[1]-1),
                 self.safeAt(head[0], head[1]+1),
                 *self.closestFood(*head),
-                snake.size]]
+                snake.size]
 
     # spiraling out algorithm (sorta) for finding closest food tile to x, y
     def closestFood(self, x, y):
@@ -59,12 +59,12 @@ class Map():
             # look at horizontal sides (and check if both points are still in grid)
             if self.isInGrid(x - i, y - i) or self.isInGrid(x - i, y + i):
                 for nx, ny in zip([x - i] * len(spiral), spiral):
-                    if self.safeAt(nx, ny) == 2:
+                    if self.safeAt(nx, ny) == -1:
                         return x - nx, y - ny
 
             if self.isInGrid(x + i, y - i) or self.isInGrid(x + i, y + i):
                 for nx, ny in zip([x + i] * len(spiral), spiral):
-                    if self.safeAt(nx, ny) == 2:
+                    if self.safeAt(nx, ny) == -1:
                         return x - nx, y - ny
 
             # interweave vertical sides
@@ -74,12 +74,12 @@ class Map():
             # look at vertical sides
             if self.isInGrid(x - i, y - i) or self.isInGrid(x + i, y - i):
                 for nx, ny in zip(spiral, [y - i] * len(spiral)):
-                    if self.safeAt(nx, ny) == 2:
+                    if self.safeAt(nx, ny) == -1:
                         return x - nx, y - ny
 
             if self.isInGrid(x - i, y + i) or self.isInGrid(x + i, y + i):
                 for nx, ny in zip(spiral, [y + i] * len(spiral)):
-                    if self.safeAt(nx, ny) == 2:
+                    if self.safeAt(nx, ny) == -1:
                         return x - nx, y - ny
         return np.inf, np.inf
 
@@ -101,7 +101,7 @@ class Map():
         while n > 0:
             x = random.randint(1, self.x - 1)
             y = random.randint(1, self.y - 1)
-            self.grid[x][y] = 2
+            self.grid[x][y] = -1
             n -= 1
 
     def drawGrid(self, screen, xOnScreen=0, yOnScreen=0):
@@ -111,7 +111,7 @@ class Map():
                     pygame.draw.rect(screen, (255, 255, 255),
                                      pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
                                                  self.cellSize, self.cellSize))
-                if self.at(x, y) == 2:
+                if self.at(x, y) == -1:
                     pygame.draw.rect(screen, (0, 255, 0),
                                      pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
                                                  self.cellSize, self.cellSize))
@@ -120,7 +120,7 @@ class Map():
             snake.draw(screen, xOnScreen, yOnScreen, self.cellSize)
 
     def isInGrid(self, x, y):
-        return 0 <= x < self.x and 0 <= y < self.y
+        return -1 <= x < self.x and -1 <= y < self.y
 
     def at(self, x, y):
         return self.grid[x][y]
