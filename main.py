@@ -1,9 +1,9 @@
-
 import pygame
 from map import *
 from snake import *
 from geneticalgorithm import *
 from matrixoperations import *
+from userinterface import *
 
 # The idea is to have m games and n snakes in every game to run at the same time.
 # Once all snakes are dead (across all the games), they are improved with a Generic algorithm
@@ -14,7 +14,7 @@ from matrixoperations import *
 # their brains.
 
 pygame.init()
-screen = pygame.display.set_mode((420, 420))
+screen = pygame.display.set_mode((600, 420))
 
 #  you can change the input model here, but keep the input_shape as (7,)
 # and final layer output as 4 or whatever you have as dimensions.
@@ -26,16 +26,16 @@ screen = pygame.display.set_mode((420, 420))
 i = 0
 reallydone = False
 testSnakes = [Snake(2) for _ in range(100)]
-
+m = Map(200, 200, 2, 100)
+UI = UserInterface(m)
 ga = GeneticAlgorithm()
+
 for snake in testSnakes:
     snake.randomize_weights()
 
 while not reallydone:
     print("iteration", i, end='\n')
-
-    m = Map(200, 200, 2)
-    m.nextRound(testSnakes, 100)
+    m.nextRound(testSnakes)
     testSnakes = None
     done = False
 
@@ -43,7 +43,8 @@ while not reallydone:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done, reallydone = True, True
-
+            UI.handleEvents(event)
+        UI.draw(screen)
         pygame.display.flip()
         #  if all dead, returns the list of dead snakes
         # and terminates the game list
@@ -59,3 +60,7 @@ while not reallydone:
     i += 1
     if i > 100:
         reallydone = True
+
+
+
+

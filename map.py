@@ -2,6 +2,7 @@ import pygame
 import random
 import numpy as np
 from snake import *
+import os
 
 
 # tile info:
@@ -12,14 +13,17 @@ from snake import *
 # A grid based map.
 class Map():
 
-    def __init__(self, x, y, cellSize):
+    def __init__(self, x, y, cellSize, nOfFood):
         self.x = x
         self.y = y
         self.cellSize = cellSize
         self._initialize_grid()
+        self.nOfFood = nOfFood
 
-    def nextRound(self, snakes, nOfFood):
+    def nextRound(self, snakes):
         self.aliveSnakes = snakes
+        # clearing the map
+        self._initialize_grid()
 
         # letting the snakes loose
         for snake in self.aliveSnakes:
@@ -32,7 +36,7 @@ class Map():
             snake.init(x, y)
 
         # adding food to the map
-        self.addFood(nOfFood)
+        self.addFood(self.nOfFood)
 
         self.deadSnakes = []
 
@@ -51,11 +55,10 @@ class Map():
 
     def areaAt(self, x, y, r):
         area = np.ones((r * 2 + 1, r * 2 + 1, 1))
-        for X in range(r*2 + 1):
-            for Y in range(r*2 + 1):
-                area[X][Y][0] = self.safeAt(x-r+X, y-r+Y)
+        for X in range(r * 2 + 1):
+            for Y in range(r * 2 + 1):
+                area[X][Y][0] = self.safeAt(x - r + X, y - r + Y)
         return area
-
 
     #  spiraling out algorithm (sorta) for finding closest food tile to x, y
     def closestFood(self, x, y):
@@ -141,3 +144,28 @@ class Map():
             return self.grid[x][y]
         else:
             return 1
+
+    def saveSnakes(self):
+        path = "games/model"
+        i = 0
+        for s in self.aliveSnakes:
+            s.save(path + str(i) + ".h5")
+            i += 1
+        for s in self.deadSnakes:
+            s.save(path + str(i) + ".h5")
+            i += 1
+        print("Models saved!")
+
+    def loadSnakes(self):
+        path = "games/"
+        snakes = self.deadSnakes + self.aliveSnakes
+        nOfSnakes = len(snakes)
+        for (dirpath, dirnames, filenames) in os.walk(path):
+            for i, file in enumerate(filenames):
+                if i <= nOfSnakes:
+                    snakes[i].load(path + file)
+                else:
+                    snakes.append(Snake(file=path + file))
+
+        self.nextRound(snakes)
+        print("Models loaded!")

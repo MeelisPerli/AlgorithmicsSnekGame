@@ -1,10 +1,11 @@
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model, save_model
 from tensorflow.keras.layers import Dense, BatchNormalization, Input, Conv2D, MaxPooling2D, Flatten
 from collections import deque
 import numpy as np
 import random
 import pygame
 from matrixoperations import *
+
 
 def softmaxer(inp):
     e = np.exp(inp - np.max(inp))
@@ -13,11 +14,15 @@ def softmaxer(inp):
 
 class Snake():
 
-    def __init__(self, brain=2):
+    def __init__(self, brain=2, file=""):
         if brain == 1:
             self.brain1()
         elif brain == 2:
             self.brain2()
+
+        if file != "":
+            self.load(file)
+
         self.parts = deque()
         self.lifeSpan = 0
         self.alive = False
@@ -45,7 +50,7 @@ class Snake():
 
     def brain2(self):
         self.model = Sequential()
-        self.model.add(Input(shape=(5, 5, 1)))
+        self.model.add(Input(shape=(9, 9, 1)))
         self.model.add(Conv2D(5, (3, 3), padding='same', activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2), trainable=False))
         self.model.add(Flatten(trainable=False))
@@ -58,7 +63,7 @@ class Snake():
         v = mat_to_vector(w)
 
         for i in range(len(v[0])):
-            v[0][i] = random.random()*2-1
+            v[0][i] = random.random() * 2 - 1
         nw = vector_to_mat(v, w)
         self.setGenes(nw, self.biases())
 
@@ -81,7 +86,7 @@ class Snake():
         # pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
 
         # comment these 2 if you uncommented the previous 2 lines
-        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 2)
+        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)
         pred = self.model.predict([[sitrep]])
 
         self._move(np.argmax(pred), grid)
@@ -158,7 +163,7 @@ class Snake():
             if not layer.get_config()['trainable']:
                 continue
             layer.set_weights([genes[c], biases[c]])
-            c+= 1
+            c += 1
 
     #  the goto weight getter
     def genes(self):
@@ -169,6 +174,12 @@ class Snake():
 
     def configs(self):
         return [layer.get_configs() for layer in self.model.layers]
+
+    def save(self, path):
+        self.model.save(path)
+
+    def load(self, path):
+        self.model = load_model(path)
 
     def draw(self, screen, gridX, gridY, cellSize):
         for x, y in self.parts:
