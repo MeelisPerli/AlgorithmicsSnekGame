@@ -120,7 +120,7 @@ class Snake():
             return self.die(grid)
 
         # food check
-        if grid.at(x, y) == 2:
+        if grid.at(x, y) == -1:
             self._grow(grid)
 
         # adds a new segment in front of the head
