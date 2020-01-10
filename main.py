@@ -1,8 +1,9 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from keras.models import Sequential
+from keras.layers import Dense
 import pygame
 from map import *
 from snake import *
+from geneticalgorithm import  *
 
 # The idea is to have m games and n snakes in every game to run at the same time.
 # Once all snakes are dead (across all the games), they are improved with a Generic algorithm
@@ -22,18 +23,19 @@ screen = pygame.display.set_mode((420, 420))
 #  - opt
 #  - metrics
 model = [
-    Dense(14, input_shape = (7,), activation = 'relu'),
+    Dense(14, input_shape = (1,), activation = 'relu'),
     Dense(9, input_dim = 7, activation = 'relu'),
     Dense(4, activation = 'softmax')
 ]
 
 i = 0
 reallydone = False
-testSnakes = [Snake(brain = model) for _ in range(5)]
+testSnakes = [Snake(brain = model) for _ in range(10)]
+ga = GeneticAlgorithm(testSnakes)
 while not reallydone:
     print("iteration", i, end = '\n')
 
-    m = Map(100, 100, 4)
+    m = Map(200, 200, 2)
     m.nextRound(testSnakes, 10)
     testSnakes = None
     done = False
@@ -63,9 +65,12 @@ while not reallydone:
             minsize = snake.size
 
         n += 1
-        print(n, "-th snake had size: ", snake.size)
+        #print(n, "-th snake had size: ", snake.size)
+
 
     testSnakes = [Snake(brain = model) if snake.size == minsize else snake for snake in testSnakes ]
+
+    ga.mutate_snakes(3, 2, 1, 0.2)
 
     i += 1
     if i > 100:

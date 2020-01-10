@@ -1,5 +1,5 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from keras.models import Sequential
+from keras.layers import Dense
 from collections import deque
 import numpy as np
 import random
@@ -25,6 +25,7 @@ class Snake():
         self.alive = False
         self.lastDir = 0
         self.size = 0
+        self.starve = 200
 
     def init(self, x, y, initialLen=3, lifeSpan=100):
         # Using a deque to store snake's parts
@@ -37,6 +38,7 @@ class Snake():
         self.alive = True
         self.lastDir = 0
         self.size = initialLen
+        self.starve = 200
 
     # Returns if the snake is still alive.
     def step(self, sitrep, grid):
@@ -62,6 +64,7 @@ class Snake():
     # 2: down
     # 3: left
     def _move(self, dir, grid):
+        self.starve -= 1
         self.lifeSpan -= 1
         x = self.parts[0][0]
         y = self.parts[0][1]
@@ -80,7 +83,7 @@ class Snake():
             return self._move((dir + 2) % 4, grid)
 
         # wall/snake part check
-        if not grid.isInGrid(x, y) or grid.at(x, y) == 1:
+        if not grid.isInGrid(x, y) or grid.at(x, y) == 1 or self.starve<=0:
             return self.die(grid)
 
         # food check
@@ -105,6 +108,7 @@ class Snake():
 
     # Makes the snek big
     def _grow(self, grid):
+        self.starve = 200
         self.parts.append(self.parts[-1])
         self.lifeSpan += 50
         self.size += 1
