@@ -24,7 +24,7 @@ screen = pygame.display.set_mode((420, 420))
 #  - metrics
 model = [
     Dense(14, input_shape=(7,), activation='relu'),
-    BatchNormalization(),
+    #BatchNormalization(),
     Dense(9, activation='relu'),
     Dense(4, activation='softmax')
 ]

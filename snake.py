@@ -47,8 +47,8 @@ class Snake():
         #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
         # ... total 7 elements
         # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
-        # print([sitrep])
-        pred = self.model.predict([[sitrep]])
+        print([sitrep])
+        pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
 
         self._move(np.argmax(pred), grid)
 
