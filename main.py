@@ -1,5 +1,5 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from keras.models import Sequential
+from keras.layers import Dense
 import pygame
 from map import *
 from snake import *
