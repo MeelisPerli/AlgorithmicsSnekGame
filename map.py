@@ -82,7 +82,7 @@ class Map():
         return i
 
     def InRowLeft(self, x, y, val):
-        for i in range(x):
+        for i in range(x, 0, -1):
             if self.safeAt(i, y) == val:
                 return 1, x - i
         return -1, -1
@@ -90,11 +90,11 @@ class Map():
     def InRowRight(self, x, y, val):
         for i in range(x, self.x):
             if self.safeAt(i, y) == val:
-                return 1, x + i
+                return 1, i - x
         return -1, -1
 
     def InColumnUp(self, x, y, val):
-        for i in range(self.y):
+        for i in range(y, 0, -1):
             if self.safeAt(x, i) == val:
                 return 1, y - i
         return -1, -1
@@ -102,7 +102,7 @@ class Map():
     def InColumnDown(self, x, y, val):
         for i in range(y, self.y):
             if self.safeAt(x, i) == val:
-                return 1, y + i
+                return 1, i - y
         return -1, -1
 
     #  spiraling out algorithm (sorta) for finding closest food tile to x, y
