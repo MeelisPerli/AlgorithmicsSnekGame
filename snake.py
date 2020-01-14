@@ -51,7 +51,7 @@ class Snake():
 
     def brain2(self):
         self.model = Sequential()
-        self.model.add(Input(shape=(9, 9, 1)))  # 9,9, 1
+        self.model.add(Input(shape=(5, 5, 1)))  # 9,9, 1
         self.model.add(Conv2D(5, (3, 3), padding='same', activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2), trainable=False))
         self.model.add(Flatten(trainable=False))
@@ -90,7 +90,7 @@ class Snake():
         # pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
 
         # comment these 2 if you uncommented the previous 2 lines
-        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
+        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 2)  # shape (9,9,1)
         input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
         pred = self.model.predict([[sitrep]])
 

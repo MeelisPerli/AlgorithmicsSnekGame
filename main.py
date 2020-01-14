@@ -39,8 +39,8 @@ textRect.center = (620, 360)
 i = 0
 longest = []
 reallydone = False
-testSnakes = [Snake(2) for _ in range(20)]
-m = Map(50, 50, 2, 20)
+testSnakes = [Snake(2) for _ in range(40)]
+m = Map(200, 200, 2, 300)
 UI = UserInterface(m, screen)
 ga = GeneticAlgorithm()
 
@@ -67,7 +67,7 @@ while not reallydone:
             done = True
         m.drawGrid(screen, 10, 10)
 
-    long, avg = ga.mutate_snakes(testSnakes, 4, 4, 0.2)
+    long, avg = ga.mutate_snakes(testSnakes, 6, 10, 0.1)
     longest.append(long)
     if len(longest) == 30:
         longest = longest[1:]

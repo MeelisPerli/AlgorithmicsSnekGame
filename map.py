@@ -163,12 +163,10 @@ class Map():
             n -= 1
 
     def drawGrid(self, screen, xOnScreen=0, yOnScreen=0):
+        pygame.draw.rect(screen, (255, 255, 255),
+                         pygame.Rect(xOnScreen, yOnScreen, self.cellSize * self.x, self.cellSize * self.y))
         for y in range(self.y):
             for x in range(self.x):
-                if self.at(x, y) == 0:
-                    pygame.draw.rect(screen, (255, 255, 255),
-                                     pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
-                                                 self.cellSize, self.cellSize))
                 if self.at(x, y) == -1:
                     pygame.draw.rect(screen, (0, 255, 0),
                                      pygame.Rect(xOnScreen + x * self.cellSize, yOnScreen + y * self.cellSize,
