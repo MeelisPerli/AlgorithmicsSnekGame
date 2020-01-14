@@ -30,6 +30,7 @@ class Snake():
         self.lastDir = 0
         self.size = 0
         self.randomize_weights()  # need it to assign random biases
+        self.deathPenalty = 0
 
     def init(self, x, y, initialLen=3, lifeSpan=100):
         # Using a deque to store snake's parts
@@ -42,12 +43,14 @@ class Snake():
         self.alive = True
         self.lastDir = 0
         self.size = initialLen
+        self.deathPenalty = 0
+        self.beenAlive = 0
 
     def brain1(self):
         self.model = Sequential()
         self.model.add(Input(shape=(17,)))
-        self.model.add(Dense(20, activation='relu'))
-        self.model.add(Dense(10, activation='relu'))
+        self.model.add(Dense(20, activation='tanh'))
+        self.model.add(Dense(10, activation='tanh'))
         self.model.add(Dense(4, activation='softmax'))
 
     def brain2(self):
@@ -77,7 +80,9 @@ class Snake():
         if not self.alive:
             return False
         elif self.lifeSpan <= 0:
-            return self.die(grid)
+            r = self.die(grid)
+            self.deathPenalty = 0
+            return r
         self.beenAlive += 1
         #### TODO: input tuning
         #### right now:
@@ -91,10 +96,10 @@ class Snake():
         head = self.parts[0]
         input = []
         # distance to items and if can be found
-        sides = [grid.InRowLeft(head[0], head[1], 1), grid.InRowRight(head[0], head[1], 1),
-                 grid.InColumnUp(head[0], head[1], 1), grid.InColumnDown(head[0], head[1], 1),
-                 grid.InRowLeft(head[0], head[1], -1), grid.InRowRight(head[0], head[1], -1),
-                 grid.InColumnUp(head[0], head[1], -1), grid.InColumnDown(head[0], head[1], -1)]
+        sides = [grid.InRowLeft(head[0], head[1], 1, 10), grid.InRowRight(head[0], head[1], 1, 10),
+                 grid.InColumnUp(head[0], head[1], 1, 10), grid.InColumnDown(head[0], head[1], 1, 10),
+                 grid.InRowLeft(head[0], head[1], -1, 10), grid.InRowRight(head[0], head[1], -1, 10),
+                 grid.InColumnUp(head[0], head[1], -1, 10), grid.InColumnDown(head[0], head[1], -1, 10)]
         for i in sides:
             input.append(i[0])
             input.append(i[1])
@@ -156,6 +161,7 @@ class Snake():
     # This can be changed to food
     def die(self, grid):
         self.alive = False
+        self.deathPenalty = 3
         for x, y in self.parts:
             grid.grid[x][y] = 0
         return False

@@ -42,7 +42,7 @@ class GeneticAlgorithm:
             _, parent2 = parent_snakes[i + 1]
 
             for j in range(children):
-                self.crossover_uniform(parent1, parent2, child_snakes[j + k][1])
+                self.crossover(parent1, parent2, child_snakes[j + k][1], mutation_probability)
                 self.mutation_gaussian(child_snakes[j + k][1], 0.1)
                 # print("Nüüd on ")
                 # print(child_snakes[j+k][1].biases())
@@ -56,7 +56,7 @@ class GeneticAlgorithm:
         print("Longest snake " + str(ranked_snakes[0][0]))
         return ranked_snakes[0][0], sum([rank for rank, _ in ranked_snakes]) / len(ranked_snakes)
 
-    def crossover(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake) -> Snake:
+    def crossover(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake, mutation_probability:float) -> Snake:
         """
         Creates new weights for two childs
         :param parent_snake1: First parent snake
@@ -80,12 +80,16 @@ class GeneticAlgorithm:
 
         # print(child_genes)
         for i in range(len(parent_genes1[0])):
+            m = 0
+            if random.random() <mutation_probability:
+                m = random.randint(-120,120)/1000
+
 
             choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_genes[0][i] = parent_genes2[0][i]
+                child_genes[0][i] = parent_genes2[0][i] + m
             if choice == 2:
-                child_genes[0][i] = parent_genes1[0][i]
+                child_genes[0][i] = parent_genes1[0][i] + m
             else:
                 child_genes[0][i] = random.uniform(-1, 1)
         # print("new genes")
@@ -122,7 +126,7 @@ class GeneticAlgorithm:
                        vector_to_mat(child_biases, child.biases()))
         return child
 
-    def crossover_uniform(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake):
+    def crossover_uniform(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake, mutationProp: float):
         """
         Creates new weights for two childs
         :param parent_snake1: First parent snake
@@ -291,4 +295,4 @@ class GeneticAlgorithm:
         :param snek: a snek instance
         :return: fitness score
         """
-        return snek.size + round(snek.beenAlive/1000,3)
+        return snek.size + round(snek.beenAlive/1000,3) - snek.deathPenalty

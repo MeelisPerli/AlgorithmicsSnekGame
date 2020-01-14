@@ -38,8 +38,8 @@ class UserInterface():
         screen.blit(surf, (430, 140))
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(430, 350, 220, 20))
         text = font.render('Gen: ' + str(gen)
-                           + "Avg: " + str(round(avg, 2))
-                           + "Best: " + str(longest[-1]), True, (255, 255, 255), (255, 255))
+                           + " Avg: " + str(round(avg, 2))
+                           + " Best: " + str(longest[-1]), True, (255, 255, 255), (255, 255))
         screen.blit(text, textRect)
 
         return line

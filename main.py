@@ -69,7 +69,7 @@ while not reallydone:
 
     long, avg = ga.mutate_snakes(testSnakes, 6, 10, 0.1)
     longest.append(long)
-    if len(longest) == 30:
+    if len(longest) == 100:
         longest = longest[1:]
     lines.append(UI.showPlots(screen, longest, fig, i, avg, font, textRect, lines))
 
