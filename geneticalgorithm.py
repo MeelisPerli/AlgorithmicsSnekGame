@@ -291,4 +291,4 @@ class GeneticAlgorithm:
         :param snek: a snek instance
         :return: fitness score
         """
-        return snek.size
+        return snek.size + round(snek.beenAlive/1000,3)

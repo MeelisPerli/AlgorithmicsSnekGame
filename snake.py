@@ -25,6 +25,7 @@ class Snake():
 
         self.parts = deque()
         self.lifeSpan = 0
+        self.beenAlive = 0
         self.alive = False
         self.lastDir = 0
         self.size = 0
@@ -43,11 +44,11 @@ class Snake():
         self.size = initialLen
 
     def brain1(self):
-        inp = Input((7,))
-        d1 = Dense(14, activation='relu')(inp)
-        d2 = Dense(9, activation='relu')(d1)
-        d3 = Dense(4, activation='softmax')(d2)
-        self.model = Sequential(input=inp, output=d3)
+        self.model = Sequential()
+        self.model.add(Input(shape=(17,)))
+        self.model.add(Dense(20, activation='relu'))
+        self.model.add(Dense(10, activation='relu'))
+        self.model.add(Dense(4, activation='softmax'))
 
     def brain2(self):
         self.model = Sequential()
@@ -77,7 +78,7 @@ class Snake():
             return False
         elif self.lifeSpan <= 0:
             return self.die(grid)
-
+        self.beenAlive += 1
         #### TODO: input tuning
         #### right now:
         #  sitrep = [(item (0, 1, 2) at:) left, up, right, down,
@@ -86,13 +87,25 @@ class Snake():
         # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
 
         # Uncomment the next 2 lines, if u want to use the other snake
-        # sitrep = grid.sitrep((self))
-        # pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
+
+        head = self.parts[0]
+        input = []
+        # distance to items and if can be found
+        sides = [grid.InRowLeft(head[0], head[1], 1), grid.InRowRight(head[0], head[1], 1),
+                 grid.InColumnUp(head[0], head[1], 1), grid.InColumnDown(head[0], head[1], 1),
+                 grid.InRowLeft(head[0], head[1], -1), grid.InRowRight(head[0], head[1], -1),
+                 grid.InColumnUp(head[0], head[1], -1), grid.InColumnDown(head[0], head[1], -1)]
+        for i in sides:
+            input.append(i[0])
+            input.append(i[1])
+        # moving dir
+        input.append(self.lastDir)
+        pred = self.model.predict([[input]])
 
         # comment these 2 if you uncommented the previous 2 lines
-        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 2)  # shape (9,9,1)
-        input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
-        pred = self.model.predict([[sitrep]])
+        # sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
+        # input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
+        # pred = self.model.predict([[sitrep]])
 
         self._move(np.argmax(pred), grid)
 
@@ -104,6 +117,7 @@ class Snake():
     # 2: down
     # 3: left
     def _move(self, dir, grid):
+        self.lastDir = dir
         self.lifeSpan -= 1
         x = self.parts[0][0]
         y = self.parts[0][1]
@@ -149,7 +163,7 @@ class Snake():
     # Makes the snek big
     def _grow(self, grid):
         self.parts.append(self.parts[-1])
-        self.lifeSpan += 50
+        self.lifeSpan += 100
         self.size += 1
         grid.addFood(1)
 
