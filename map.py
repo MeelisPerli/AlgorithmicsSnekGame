@@ -82,25 +82,25 @@ class Map():
         return i
 
     def InRowLeft(self, x, y, val):
-        for i in range(x, 0, -1):
+        for i in range(x - 1, 0, -1):
             if self.safeAt(i, y) == val:
                 return 1, x - i
         return -1, -1
 
     def InRowRight(self, x, y, val):
-        for i in range(x, self.x):
+        for i in range(x + 1, self.x):
             if self.safeAt(i, y) == val:
                 return 1, i - x
         return -1, -1
 
     def InColumnUp(self, x, y, val):
-        for i in range(y, 0, -1):
+        for i in range(y - 1, 0, -1):
             if self.safeAt(x, i) == val:
                 return 1, y - i
         return -1, -1
 
     def InColumnDown(self, x, y, val):
-        for i in range(y, self.y):
+        for i in range(y + 1, self.y):
             if self.safeAt(x, i) == val:
                 return 1, i - y
         return -1, -1
