@@ -28,6 +28,7 @@ class Snake():
         self.alive = False
         self.lastDir = 0
         self.size = 0
+        self.randomize_weights()  # need it to assign random biases
 
     def init(self, x, y, initialLen=3, lifeSpan=100):
         # Using a deque to store snake's parts
@@ -50,7 +51,7 @@ class Snake():
 
     def brain2(self):
         self.model = Sequential()
-        self.model.add(Input(shape=(9, 9, 1)))
+        self.model.add(Input(shape=(9, 9, 1)))  # 9,9, 1
         self.model.add(Conv2D(5, (3, 3), padding='same', activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2), trainable=False))
         self.model.add(Flatten(trainable=False))
@@ -65,7 +66,10 @@ class Snake():
         for i in range(len(v[0])):
             v[0][i] = random.random() * 2 - 1
         nw = vector_to_mat(v, w)
-        self.setGenes(nw, self.biases())
+        bias = mat_to_vector(self.biases())
+        biases = [random.uniform(-1, 1) for a in bias[0]]
+        b = vector_to_mat([biases], self.biases())
+        self.setGenes(nw, b)
 
     # Returns if the snake is still alive.
     def step(self, grid):
@@ -86,7 +90,8 @@ class Snake():
         # pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
 
         # comment these 2 if you uncommented the previous 2 lines
-        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)
+        sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
+        input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
         pred = self.model.predict([[sitrep]])
 
         self._move(np.argmax(pred), grid)
@@ -102,7 +107,6 @@ class Snake():
         self.lifeSpan -= 1
         x = self.parts[0][0]
         y = self.parts[0][1]
-        self.lastDir = dir
         if dir == 0:
             y -= 1
         elif dir == 1:

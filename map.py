@@ -1,6 +1,3 @@
-import pygame
-import random
-import numpy as np
 from snake import *
 import os
 
@@ -58,7 +55,55 @@ class Map():
         for X in range(r * 2 + 1):
             for Y in range(r * 2 + 1):
                 area[X][Y][0] = self.safeAt(x - r + X, y - r + Y)
+
         return area
+
+    def getInput(self, x, y):
+        i = np.ones((3, 4, 2))
+        i[0, 0, 0], i[0, 0, 1] = self.InRowRight(x, y, -1)
+        i[0, 1, 0], i[0, 1, 1] = self.InRowLeft(x, y, -1)
+
+        i[0, 2, 0], i[0, 2, 1] = self.InColumnUp(x, y, -1)
+        i[0, 3, 0], i[0, 3, 1] = self.InColumnDown(x, y, -1)
+
+        i[1, 0, 0], i[1, 0, 1] = self.InRowLeft(x, y, 1)
+        i[1, 1, 0], i[1, 1, 1] = self.InRowRight(x, y, 1)
+
+        i[1, 2, 0], i[1, 2, 1] = self.InColumnUp(x, y, 1)
+        i[1, 3, 0], i[1, 3, 1] = self.InColumnDown(x, y, 1)
+
+        i[2, 0, 0], i[2, 0, 1] = self.x - x, x
+        i[2, 1, 0], i[2, 1, 1] = x, self.x
+
+        i[2, 2, 0], i[2, 2, 1] = y, self.y
+        i[2, 3, 0], i[2, 3, 1] = self.y - y, y
+        # print(i)
+
+        return i
+
+    def InRowLeft(self, x, y, val):
+        for i in range(x):
+            if self.safeAt(i, y) == val:
+                return 1, x - i
+        return -1, -1
+
+    def InRowRight(self, x, y, val):
+        for i in range(x, self.x):
+            if self.safeAt(i, y) == val:
+                return 1, x + i
+        return -1, -1
+
+    def InColumnUp(self, x, y, val):
+        for i in range(self.y):
+            if self.safeAt(x, i) == val:
+                return 1, y - i
+        return -1, -1
+
+    def InColumnDown(self, x, y, val):
+        for i in range(y, self.y):
+            if self.safeAt(x, i) == val:
+                return 1, y + i
+        return -1, -1
 
     #  spiraling out algorithm (sorta) for finding closest food tile to x, y
     def closestFood(self, x, y):
