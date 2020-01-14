@@ -2,7 +2,7 @@ from typing import List, Tuple
 import numpy as np
 
 
-def mat_to_vector(weights: List) -> np.ndarray:
+def mat_to_vector(weights) -> np.ndarray:
     """
     Transform weights from list containing arrays to one vector
     :param weights: list containing weights
@@ -22,7 +22,10 @@ def mat_to_vector(weights: List) -> np.ndarray:
 
     return np.array(weights_vec)
 """
-    return np.asarray(weights).flatten()
+    if weights is np.ndarray:
+        return weights.flatten()
+    else:
+        return np.asarray(weights).flatten()
 
 
 def vector_to_mat(vector_weights, mat_weights):
@@ -51,6 +54,13 @@ def vector_to_mat(vector_weights, mat_weights):
 
     return mat_weights_new
     """
-    shape = np.asarray(mat_weights).shape
+    if mat_weights is np.ndarray:
+        shape = mat_weights.shape
+    else:
+        shape = np.asarray(mat_weights).shape
+
+    if vector_weights is not np.ndarray:
+        vector_weights = np.asarray(vector_weights)
+
     np.asarray(vector_weights).reshape(shape)
     return vector_weights

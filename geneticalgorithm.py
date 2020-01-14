@@ -79,14 +79,14 @@ class GeneticAlgorithm:
         # print("childi oma")
 
         # print(child_genes)
-        for i in range(len(parent_genes1[0])):
+        for i in range(len(parent_genes1)):
             choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_genes[0][i] = parent_genes2[0][i]
+                child_genes[i] = parent_genes2[i]
             if choice == 2:
-                child_genes[0][i] = parent_genes1[0][i]
+                child_genes[i] = parent_genes1[i]
             else:
-                child_genes[0][i] = (parent_genes2[0][i] + parent_genes1[0][i])
+                child_genes[i] = (parent_genes2[i] + parent_genes1[i])/2
         # print("new genes")
         # print(child_genes)
         parent_biases1 = mat_to_vector(parent_snake1.biases())
@@ -104,16 +104,16 @@ class GeneticAlgorithm:
 
         # print(child_biases)
 
-        for i in range(len(parent_biases1[0])):
+        for i in range(len(parent_biases1)):
             choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_biases[0][i] = parent_biases2[0][i]
+                child_biases[i] = parent_biases2[i]
 
             elif choice == 2:
-                child_biases[0][i] = parent_biases1[0][i]
+                child_biases[i] = parent_biases1[i]
 
             else:
-                child_biases[0][i] = (parent_biases1[0][i] + parent_biases2[0][i])
+                child_biases[i] = (parent_biases1[i] + parent_biases2[i])/2
         # print()
         # print("New alue for biases:")
         # print(child_biases)

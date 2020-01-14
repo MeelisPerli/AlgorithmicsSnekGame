@@ -32,8 +32,8 @@ gen = 0
 longest = []
 avgs = []
 reallydone = False
-testSnakes = [Snake(1) for _ in range(20)]
-games = 1
+testSnakes = [Snake(1) for _ in range(100)]
+games = 5
 gameCounter = 0
 snakesPerRound = len(testSnakes) // games
 m = [Map(200, 200, 2, 100) for _ in range(games)]
@@ -70,13 +70,13 @@ while not reallydone:
                 gameCounter = 0
                 done = True
 
-    long, avg = ga.mutate_snakes(testSnakes, 4, 7, 0.1)
+    long, avg = ga.mutate_snakes(testSnakes, 20, 7, 0.1)
     longest.append(long)
     avgs.append(avg)
     if len(longest) == 100:
         longest = longest[1:]
         avgs = avgs[1:]
-    lines.append(UI.showPlots(screen, longest, avgs, fig, i, avg, font, textRect, lines))
+    lines.append(UI.showPlots(screen, longest, avgs, fig, gen, avg, font, textRect, lines))
 
     gen += 1
     if gen > 1000:
