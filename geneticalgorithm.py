@@ -43,7 +43,7 @@ class GeneticAlgorithm:
 
             for j in range(children):
                 self.crossover(parent1, parent2, child_snakes[j + k][1], mutation_probability)
-                self.mutation_gaussian(child_snakes[j + k][1], 0.1)
+                self.mutate2(child_snakes[j + k][1], 0.1, 0.1)
                 # print("Nüüd on ")
                 # print(child_snakes[j+k][1].biases())
                 # print()
@@ -56,7 +56,7 @@ class GeneticAlgorithm:
         print("Longest snake " + str(ranked_snakes[0][0]))
         return ranked_snakes[0][0], sum([rank for rank, _ in ranked_snakes]) / len(ranked_snakes)
 
-    def crossover(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake, mutation_probability:float) -> Snake:
+    def crossover(self, parent_snake1: Snake, parent_snake2: Snake, child: Snake, mutation_probability: float) -> Snake:
         """
         Creates new weights for two childs
         :param parent_snake1: First parent snake
@@ -80,18 +80,13 @@ class GeneticAlgorithm:
 
         # print(child_genes)
         for i in range(len(parent_genes1[0])):
-            m = 0
-            if random.random() <mutation_probability:
-                m = random.randint(-120,120)/1000
-
-
             choice = random.choice([1] * 45 + [2] * 45 + [3] * 10)
             if choice == 1:
-                child_genes[0][i] = parent_genes2[0][i] + m
+                child_genes[0][i] = parent_genes2[0][i]
             if choice == 2:
-                child_genes[0][i] = parent_genes1[0][i] + m
+                child_genes[0][i] = parent_genes1[0][i]
             else:
-                child_genes[0][i] = random.uniform(-1, 1)
+                child_genes[0][i] = (parent_genes2[0][i] + parent_genes1[0][i])
         # print("new genes")
         # print(child_genes)
         parent_biases1 = mat_to_vector(parent_snake1.biases())
@@ -118,7 +113,7 @@ class GeneticAlgorithm:
                 child_biases[0][i] = parent_biases1[0][i]
 
             else:
-                child_biases[0][i] = random.uniform(-1, 1)
+                child_biases[0][i] = (parent_biases1[0][i] + parent_biases2[0][i])
         # print()
         # print("New alue for biases:")
         # print(child_biases)
@@ -261,28 +256,39 @@ class GeneticAlgorithm:
                     vector_bias[i] = random.uniform(-1, 1)
                 snake.setGenes(snake.genes(), vector_to_mat(vector_bias, snake.biases()))
 
+    def mutate2(self, snake, mutation_probability, scale):
+        for layer in snake.model.layers:
+            w = layer.get_weights()
+            v = mat_to_vector(w)
+            for i in range(len(v)):
+                if random.random() < mutation_probability:
+                    w[i] += (random.random() - 0.5) * scale
+
+            layer.set_weights(vector_to_mat(v, w))
+
     def mutation_gaussian(self, snake: Snake, prob_mutation: float,
-                          scale: Optional[float] = None) -> None:
+                          scale: float = 1) -> None:
 
         # Determine which genes will be mutated
         weights = snake.genes()
         vw = mat_to_vector(weights)
-        mutation_array_w = np.random.random((len(vw[0]),)) < prob_mutation
+        mutation_array_w = np.random.random(len(vw)) < prob_mutation
         # If mu and sigma are defined, create gaussian distribution around each one
 
-        mutation_w = np.random.normal(size=(len(vw[0]),))
+        mutation_w = np.random.normal(len(vw))
 
         bias = snake.biases()
         vb = mat_to_vector(bias)
-        mutation_array_b = np.random.random((len(vb[0]),)) < prob_mutation
-        mutation_b = np.random.normal(size=(len(vb[0]),))
+        mutation_array_b = np.random.random(len(vb)) < prob_mutation
+        mutation_b = np.random.normal(len(vb))
 
-        if scale:
-            mutation_w[mutation_array_w] *= scale
-            mutation_b[mutation_array_b] *= scale
+        #mutation_w[mutation_array_w] *= [scale]
+        #mutation_b[mutation_array_b] *= [scale]
         # Update
-        vw[0][mutation_array_w] += mutation_w[mutation_array_w]
-        vb[0][mutation_array_b] += mutation_b[mutation_array_b]
+        print(vw)
+
+        vw += mutation_w
+        vb += mutation_b
 
         mw = vector_to_mat(vw, snake.genes())
         mb = vector_to_mat(vb, snake.biases())
@@ -295,4 +301,4 @@ class GeneticAlgorithm:
         :param snek: a snek instance
         :return: fitness score
         """
-        return snek.size + round(snek.beenAlive/1000,3) - snek.deathPenalty
+        return snek.size - 3 + round(snek.beenAlive / 1000, 3) - snek.deathPenalty

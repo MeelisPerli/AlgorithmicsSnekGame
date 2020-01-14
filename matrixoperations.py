@@ -1,11 +1,14 @@
 from typing import List, Tuple
 import numpy as np
 
+
 def mat_to_vector(weights: List) -> np.ndarray:
     """
     Transform weights from list containing arrays to one vector
     :param weights: list containing weights
     :return: a numpy array
+    """
+
     """
     weights = np.asmatrix(weights)
     weights_vec = []
@@ -16,7 +19,10 @@ def mat_to_vector(weights: List) -> np.ndarray:
                                         newshape=(weights[sol_idx, layer_idx].size))
             vector.extend(vector_weights)
         weights_vec.append(vector)
+
     return np.array(weights_vec)
+"""
+    return np.asarray(weights).flatten()
 
 
 def vector_to_mat(vector_weights, mat_weights):
@@ -26,7 +32,7 @@ def vector_to_mat(vector_weights, mat_weights):
     :param mat_weights: initial weights
     :return: Weights in matrix format
     """
-
+    """
     mat_weights_new = []
 
     for sol_idx in range(len(mat_weights)):
@@ -44,3 +50,7 @@ def vector_to_mat(vector_weights, mat_weights):
         mat_weights_new.append(temp)
 
     return mat_weights_new
+    """
+    shape = np.asarray(mat_weights).shape
+    np.asarray(vector_weights).reshape(shape)
+    return vector_weights

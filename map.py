@@ -16,6 +16,7 @@ class Map():
         self.cellSize = cellSize
         self._initialize_grid()
         self.nOfFood = nOfFood
+        self.snakesLeft = 0
 
     def nextRound(self, snakes):
         self.aliveSnakes = snakes
@@ -34,11 +35,28 @@ class Map():
 
         # adding food to the map
         self.addFood(self.nOfFood)
-
+        self.snakesLeft = len(self.aliveSnakes)
         self.deadSnakes = []
 
     def _initialize_grid(self):
         self.grid = [[0] * self.x for i in range(self.y)]
+
+    # If all snakes are dead, then returns them. Otherwise None
+    def update(self):
+        alive = []
+        for snake in self.aliveSnakes:
+            if snake.step(self):
+                alive.append(snake)
+            else:
+                self.snakesLeft -= 1
+                self.deadSnakes.append(snake)
+
+        self.aliveSnakes = alive
+        if self.snakesLeft > 0:
+            return None
+
+        return self.deadSnakes
+
 
     def sitrep(self, snake):
         #  access head
@@ -85,45 +103,41 @@ class Map():
         if lim == -1:
             lim = 0
         else:
-            lim = x-lim
+            lim = x - lim
         for i in range(x - 1, lim, -1):
             if self.safeAt(i, y) == val:
                 return 1, x - i
         return -1, -1
 
-
     def InRowRight(self, x, y, val, lim=-1):
         if lim == -1:
             lim = self.x
         else:
-            lim = x+lim
+            lim = x + lim
         for i in range(x + 1, lim):
             if self.safeAt(i, y) == val:
                 return 1, i - x
         return -1, -1
 
-
     def InColumnUp(self, x, y, val, lim=-1):
         if lim == -1:
             lim = 0
         else:
-            lim = y-lim
+            lim = y - lim
         for i in range(y - 1, lim, -1):
             if self.safeAt(x, i) == val:
                 return 1, y - i
         return -1, -1
 
-
     def InColumnDown(self, x, y, val, lim=-1):
         if lim == -1:
             lim = self.y
         else:
-            lim = y+lim
+            lim = y + lim
         for i in range(y + 1, lim):
             if self.safeAt(x, i) == val:
                 return 1, i - y
         return -1, -1
-
 
     #  spiraling out algorithm (sorta) for finding closest food tile to x, y
     def closestFood(self, x, y):
@@ -160,30 +174,12 @@ class Map():
                         return x - nx, y - ny
         return np.inf, np.inf
 
-
-    # If all snakes are dead, then returns them. Otherwise None
-    def update(self):
-        alive = []
-        for snake in self.aliveSnakes:
-            if snake.step(self):
-                alive.append(snake)
-            else:
-                self.deadSnakes.append(snake)
-
-        self.aliveSnakes = alive
-        if len(alive) > 0:
-            return None
-
-        return self.deadSnakes
-
-
     def addFood(self, n):
         while n > 0:
             x = random.randint(1, self.x - 1)
             y = random.randint(1, self.y - 1)
             self.grid[x][y] = -1
             n -= 1
-
 
     def drawGrid(self, screen, xOnScreen=0, yOnScreen=0):
         pygame.draw.rect(screen, (255, 255, 255),
@@ -198,14 +194,11 @@ class Map():
         for snake in self.aliveSnakes:
             snake.draw(screen, xOnScreen, yOnScreen, self.cellSize)
 
-
     def isInGrid(self, x, y):
         return -1 <= x < self.x and -1 <= y < self.y
 
-
     def at(self, x, y):
         return self.grid[x][y]
-
 
     #  edit: added safer query for inputs
     def safeAt(self, x, y):
@@ -213,7 +206,6 @@ class Map():
             return self.grid[x][y]
         else:
             return 1
-
 
     def saveSnakes(self):
         path = "games/model"
@@ -225,7 +217,6 @@ class Map():
             s.save(path + str(i) + ".h5")
             i += 1
         print("Models saved!")
-
 
     def loadSnakes(self):
         path = "games/"

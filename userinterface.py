@@ -10,8 +10,9 @@ class UserInterface():
     def __init__(self, map, screen):
         self.clickedToggle = False
         self.map = map
-        self.saveButton = Button(430, 20, 80, 20, "Save", map.saveSnakes)
-        self.loadButton = Button(430, 60, 80, 20, "Load", map.loadSnakes)
+        self.saveButton = Button(430, 20, 80, 20, "Save", map[0].saveSnakes)
+        self.loadButton = Button(430, 60, 80, 20, "Load", map[0].loadSnakes)
+        self.font = pygame.font.SysFont("Arial", 20)
 
     def handleEvents(self, event):
         self.saveButton.handleEvent(event)
@@ -20,14 +21,17 @@ class UserInterface():
     def draw(self, screen):
         self.saveButton.draw(screen)
         self.loadButton.draw(screen)
+        self.displaySnakeCount(screen)
 
-    def showPlots(self, screen, longest, fig, gen, avg, font, textRect, lines):
+
+    def showPlots(self, screen, longest, avgs, fig, gen, avg, font, textRect, lines):
         ax = fig.gca()
 
         if lines:
             ax.lines.pop()
 
         line = ax.plot(longest)
+        line2 = ax.plot(avgs)
         canvas = agg.FigureCanvasAgg(fig)
         canvas.draw()
         renderer = canvas.get_renderer()
@@ -44,3 +48,13 @@ class UserInterface():
 
         return line
         # pygame.display.flip()
+
+    def displaySnakeCount(self, screen):
+        c = 0
+        for map in self.map:
+            c += map.snakesLeft
+        self.text("Snakes left: " + str(c), screen, 430, 100)
+
+    def text(self, text, screen, x, y):
+        t = self.font.render(text, True, (255, 255, 255))
+        screen.blit(t, (x, y))

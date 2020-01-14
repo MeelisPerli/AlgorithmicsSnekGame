@@ -29,7 +29,7 @@ class Snake():
         self.alive = False
         self.lastDir = 0
         self.size = 0
-        self.randomize_weights()  # need it to assign random biases
+        #self.randomize_weights()  #last time i checked, it wasn't needed anymore
         self.deathPenalty = 0
 
     def init(self, x, y, initialLen=3, lifeSpan=100):
@@ -66,13 +66,15 @@ class Snake():
     def randomize_weights(self):
         w = self.genes()
         v = mat_to_vector(w)
-
-        for i in range(len(v[0])):
-            v[0][i] = random.random() * 2 - 1
+        for i in range(len(v)):
+            v[i] = random.random() * 2 - 1
         nw = vector_to_mat(v, w)
-        bias = mat_to_vector(self.biases())
-        biases = [random.uniform(-1, 1) for a in bias[0]]
-        b = vector_to_mat([biases], self.biases())
+
+        bias = self.biases()
+        bv = mat_to_vector(bias)
+        for i in range(len(bv)):
+            bv[i] = random.random() * 2 - 1
+        b = vector_to_mat(bv, bias)
         self.setGenes(nw, b)
 
     # Returns if the snake is still alive.
