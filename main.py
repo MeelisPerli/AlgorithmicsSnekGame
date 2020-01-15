@@ -6,7 +6,6 @@ from matrixoperations import *
 from userinterface import *
 
 
-
 #  you can change the input model here, but keep the input_shape as (7,)
 # and final layer output as 4 or whatever you have as dimensions.
 # extra params for Snake in compilation:
@@ -42,7 +41,7 @@ class SnakeGame():
         self.avgs = []
 
         # general stuff
-        self.UI = UserInterface(self.maps, self.screen)
+        self.UI = UserInterface(self.maps, self)
         self.GA = GeneticAlgorithm()
         self.DONE = False
 
@@ -52,7 +51,6 @@ class SnakeGame():
             for i in range(self.parallel_games):
                 self.maps[i].nextRound(self.snakes[i * self.snakes_per_round:(i + 1) * self.snakes_per_round])
             self.mainloop()
-
 
     def mainloop(self):
         view = 0
@@ -105,8 +103,29 @@ class SnakeGame():
         self.gen += 1
         self.UI.showPlots(self.screen, self.longest, self.avgs, self.gen, avg)
 
+    def save_all_models(self):
+        path = "games/model"
+        c = 0
+        for m in self.maps:
+            m.saveSnakes(path, c)
+            c += self.number_of_food_per_map
 
+    def load_all_models(self):
+        snakes = []
+        path = "games/"
+        for (dirpath, dirnames, filenames) in os.walk(path):
+            for i, file in enumerate(filenames):
+                snakes.append(Snake(file=path + file))
+
+        self.snakes = snakes
+        self.number_of_snakes = len(self.snakes)
+        self.snakes_per_round = self.number_of_snakes // self.parallel_games
+        self.gen = 0
+        self.longest = []
+        self.avgs = []
+        print("Models loaded!")
+        self.start()
+        self.UI.showPlots(self.screen, self.longest, self.avgs, 0, 0)
 
 game = SnakeGame()
 game.start()
-

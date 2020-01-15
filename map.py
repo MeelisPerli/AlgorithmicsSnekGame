@@ -57,7 +57,6 @@ class Map():
 
         return self.deadSnakes
 
-
     def sitrep(self, snake):
         #  access head
         head = snake.parts[0]
@@ -207,23 +206,12 @@ class Map():
         else:
             return 1
 
-    def saveSnakes(self, path):
+    def saveSnakes(self, path, game):
+        i = 0
         for s in self.aliveSnakes:
-            s.save(path)
+            s.save(path + str(int(game + i)) + ".h5")
+            i += 1
         for s in self.deadSnakes:
-            s.save(path)
+            s.save(path + str(int(game + i)) + ".h5")
+            i += 1
         print("Models saved!")
-
-    def loadSnakes(self, path):
-        path = "games/"
-        snakes = self.deadSnakes + self.aliveSnakes
-        nOfSnakes = len(snakes)
-        for (dirpath, dirnames, filenames) in os.walk(path):
-            for i, file in enumerate(filenames):
-                if i <= nOfSnakes:
-                    snakes[i].load(path + file)
-                else:
-                    snakes.append(Snake(file=path + file))
-
-        self.nextRound(snakes)
-        print("Models loaded!")

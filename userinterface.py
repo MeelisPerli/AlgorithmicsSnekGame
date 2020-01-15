@@ -12,8 +12,8 @@ class UserInterface():
     def __init__(self, maps, main):
         self.clickedToggle = False
         self.maps = maps
-        self.saveButton = Button(430, 20, 80, 20, "Save", maps[0].saveSnakes)
-        self.loadButton = Button(430, 60, 80, 20, "Load", maps[0].loadSnakes)
+        self.saveButton = Button(430, 20, 80, 20, "Save", main.save_all_models)
+        self.loadButton = Button(430, 60, 80, 20, "Load", main.load_all_models)
         self.font = pygame.font.SysFont("Arial", 20)
         self.fig = pylab.figure(figsize=[2, 2],  # Inches
                                 dpi=100,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
@@ -59,8 +59,3 @@ class UserInterface():
         screen.blit(t, (x, y))
 
 
-    def save_all_models(self):
-        path = "games/model"
-        c = 0
-        for m in self.maps:
-            m.saveSnakes(path + str(c) + ".h5")
