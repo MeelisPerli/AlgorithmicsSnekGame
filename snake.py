@@ -19,6 +19,9 @@ class Snake():
             self.brain1()
         elif brain == 2:
             self.brain2()
+        elif brain == 3:
+            self.brain3()
+        self.brain_num = brain
 
         if file != "":
             self.load(file)
@@ -62,6 +65,14 @@ class Snake():
         self.model.add(Dense(6, activation='relu'))
         self.model.add(Dense(4, activation='softmax'))
 
+    def brain3(self):
+        self.model = Sequential()
+        self.model.add(Dense(21, input_shape = (7,), activation='tanh'))
+        self.model.add(Dense(35, activation='tanh'))
+        self.model.add(Dense(12, activation='tanh'))
+        self.model.add(Dense(34, activation='sigmoid'))
+        self.model.add(Dense(4, activation='softmax'))
+
     # idk if this is required anymore
     def randomize_weights(self):
         w = self.genes()
@@ -87,32 +98,30 @@ class Snake():
             return r
         self.beenAlive += 1
         #### TODO: input tuning
-        #### right now:
-        #  sitrep = [(item (0, 1, 2) at:) left, up, right, down,
-        #           (nearest food loc_x - x, loc_y - y) x, y, (snake length) len]
-        # ... total 7 elements
-        # NB: also need to reshape it (flip it) to have 7 features, not 7 instances
 
-        # Uncomment the next 2 lines, if u want to use the other snake
+        if self.brain_num == 1:
+            head = self.parts[0]
+            input = []
+            # distance to items and if can be found
+            sides = [grid.InRowLeft(head[0], head[1], 1, 10), grid.InRowRight(head[0], head[1], 1, 10),
+                     grid.InColumnUp(head[0], head[1], 1, 10), grid.InColumnDown(head[0], head[1], 1, 10),
+                     grid.InRowLeft(head[0], head[1], -1, 10), grid.InRowRight(head[0], head[1], -1, 10),
+                     grid.InColumnUp(head[0], head[1], -1, 10), grid.InColumnDown(head[0], head[1], -1, 10)]
+            for i in sides:
+                input.append(i[0])
+                input.append(i[1])
+            # moving dir
+            input.append(self.lastDir)
+            pred = self.model.predict([[input]])
 
-        head = self.parts[0]
-        input = []
-        # distance to items and if can be found
-        sides = [grid.InRowLeft(head[0], head[1], 1, 10), grid.InRowRight(head[0], head[1], 1, 10),
-                 grid.InColumnUp(head[0], head[1], 1, 10), grid.InColumnDown(head[0], head[1], 1, 10),
-                 grid.InRowLeft(head[0], head[1], -1, 10), grid.InRowRight(head[0], head[1], -1, 10),
-                 grid.InColumnUp(head[0], head[1], -1, 10), grid.InColumnDown(head[0], head[1], -1, 10)]
-        for i in sides:
-            input.append(i[0])
-            input.append(i[1])
-        # moving dir
-        input.append(self.lastDir)
-        pred = self.model.predict([[input]])
+        elif self.brain_num == 2:
+            sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
+            input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
+            pred = self.model.predict([[sitrep]])
 
-        # comment these 2 if you uncommented the previous 2 lines
-        # sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
-        # input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
-        # pred = self.model.predict([[sitrep]])
+        elif self.brain_num == 3:
+            sitrep = grid.sitrep((self))
+            pred = self.model.predict(np.asarray(sitrep).reshape(1, len(sitrep)))
 
         self._move(np.argmax(pred), grid)
 
