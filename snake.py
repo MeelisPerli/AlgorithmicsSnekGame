@@ -58,11 +58,9 @@ class Snake():
 
     def brain2(self):
         self.model = Sequential()
-        self.model.add(Input(shape=(5, 5, 1)))  # 9,9, 1
-        self.model.add(Conv2D(5, (3, 3), padding='same', activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), trainable=False))
-        self.model.add(Flatten(trainable=False))
-        self.model.add(Dense(6, activation='relu'))
+        self.model.add(Input(shape=(20,)))
+        self.model.add(Dense(26, activation='tanh'))
+        self.model.add(Dense(13, activation='tanh'))
         self.model.add(Dense(4, activation='softmax'))
 
     def brain3(self):
@@ -115,9 +113,23 @@ class Snake():
             pred = self.model.predict([input])
 
         elif self.brain_num == 2:
-            sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)
-            input = grid.getInput(self.parts[0][0], self.parts[0][1])  # shape (3,4,2)
-            pred = self.model.predict([[sitrep]])
+            head = self.parts[0]
+            input = []
+            # distance to items and if can be found
+            sides = [grid.InRowLeft(head[0], head[1], 1, 10), grid.InRowRight(head[0], head[1], 1, 10),
+                     grid.InColumnUp(head[0], head[1], 1, 10), grid.InColumnDown(head[0], head[1], 1, 10),
+                     grid.InRowLeft(head[0], head[1], -1, 10), grid.InRowRight(head[0], head[1], -1, 10),
+                     grid.InColumnUp(head[0], head[1], -1, 10), grid.InColumnDown(head[0], head[1], -1, 10)]
+            for i in sides:
+                input.append(i[0])
+                input.append(i[1])
+            # moving dir
+            for i in range(4):
+                if i == self.lastDir:
+                    input.append(1)
+                else:
+                    input.append(0)
+            pred = self.model.predict([[input]])
 
         elif self.brain_num == 3:
             sitrep = grid.sitrep((self))
@@ -220,3 +232,7 @@ class Snake():
         for x, y in self.parts:
             pygame.draw.rect(screen, (50, 10, 255),
                              pygame.Rect(gridX + x * cellSize, gridY + y * cellSize, cellSize, cellSize))
+
+        pygame.draw.rect(screen, (255, 0, 0),
+                         pygame.Rect(gridX + self.parts[0][0] * cellSize, gridY + self.parts[0][1] * cellSize, cellSize,
+                                     cellSize))

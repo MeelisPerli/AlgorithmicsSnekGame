@@ -14,22 +14,22 @@ class SnakeGame():
         self.screen = pygame.display.set_mode((800, 420))
 
         # variables.
-        self.number_of_snakes = 20
-        self.number_of_food_per_map = 40
-        self.parallel_games = 1  # make sure that the number of snakes is divisible by it
+        self.number_of_snakes = 200
+        self.number_of_food_per_map = 200
+        self.parallel_games = 10  # make sure that the number of snakes is divisible by it
 
         # GA variables
         # make sure that 2 * parent_pairs + children_per_parent_pair * parent_pairs <= number_of_snakes
         # if the sum is less than the number of snakes, then the empty spots will be filled up with new snakes
-        self.parent_pairs = 3
-        self.children_per_parent_pair = 4
+        self.parent_pairs = 10
+        self.children_per_parent_pair = 8
         self.mut_chance = 0.1
         # # tell to use n snakes for recall from previous random game
         # self.recall = 0
 
         # info about each game
-        self.snakes = [Snake(1) for _ in range(self.number_of_snakes)]
-        self.maps = [Map(100, 100, 4, self.number_of_food_per_map) for _ in range(self.parallel_games)]
+        self.snakes = [Snake(2) for _ in range(self.number_of_snakes)]
+        self.maps = [Map(200, 200, 2, self.number_of_food_per_map) for _ in range(self.parallel_games)]
         self.snakes_per_round = len(self.snakes) // self.parallel_games
         self.snake_data = []
 
@@ -124,7 +124,7 @@ class SnakeGame():
                          'snake_lifespan_left',
                          'snake_lifespan',
                          'snake_fitness'
-                     ]).to_csv(self.rec_path + self.model_name + "stats.csv"),
+                     ]).to_csv(self.model_name + "stats.csv"),
 
         for m in self.maps:
             m.saveSnakes(self.rec_path + self.model_name, c)
