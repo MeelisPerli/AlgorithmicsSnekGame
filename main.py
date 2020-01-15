@@ -1,17 +1,12 @@
 import pygame
+import pandas as pd
+
 from map import *
 from snake import *
 from geneticalgorithm import *
 from matrixoperations import *
 from userinterface import *
 
-
-#  you can change the input model here, but keep the input_shape as (7,)
-# and final layer output as 4 or whatever you have as dimensions.
-# extra params for Snake in compilation:
-#  - loss_fun
-#  - opt
-#  - metrics
 class SnakeGame():
 
     def __init__(self):
@@ -19,21 +14,24 @@ class SnakeGame():
         self.screen = pygame.display.set_mode((800, 420))
 
         # variables.
-        self.number_of_snakes = 100
-        self.number_of_food_per_map = 200
-        self.parallel_games = 5  # make sure that the number of snakes is divisible by it
+        self.number_of_snakes = 20
+        self.number_of_food_per_map = 40
+        self.parallel_games = 1  # make sure that the number of snakes is divisible by it
 
         # GA variables
         # make sure that 2 * parent_pairs + children_per_parent_pair * parent_pairs <= number_of_snakes
         # if the sum is less than the number of snakes, then the empty spots will be filled up with new snakes
-        self.parent_pairs = 10
-        self.children_per_parent_pair = 7
+        self.parent_pairs = 3
+        self.children_per_parent_pair = 4
         self.mut_chance = 0.1
+        # # tell to use n snakes for recall from previous random game
+        # self.recall = 0
 
         # info about each game
         self.snakes = [Snake(1) for _ in range(self.number_of_snakes)]
-        self.maps = [Map(200, 200, 2, self.number_of_food_per_map) for _ in range(self.parallel_games)]
+        self.maps = [Map(100, 100, 4, self.number_of_food_per_map) for _ in range(self.parallel_games)]
         self.snakes_per_round = len(self.snakes) // self.parallel_games
+        self.snake_data = []
 
         # info about the generations
         self.gen = 0
@@ -41,6 +39,8 @@ class SnakeGame():
         self.avgs = []
 
         # general stuff
+        self.rec_path = "games/"
+        self.model_name = "brain3_1_"
         self.UI = UserInterface(self.maps, self)
         self.GA = GeneticAlgorithm()
         self.DONE = False
@@ -48,8 +48,10 @@ class SnakeGame():
     def start(self):
         while not self.DONE:
             print("iteration", self.gen, end='\n')
+            # iterate through n parallel games and create them
             for i in range(self.parallel_games):
                 self.maps[i].nextRound(self.snakes[i * self.snakes_per_round:(i + 1) * self.snakes_per_round])
+            # workhorse
             self.mainloop()
 
     def mainloop(self):
@@ -89,6 +91,15 @@ class SnakeGame():
                     done = True
 
         self.make_new_snakes(dead_snakes)
+        for snek in dead_snakes:
+            self.snake_data.append([
+                self.gen,
+                snek.brain_num,
+                snek.size,
+                snek.lifeSpan,
+                snek.beenAlive,
+                snek.size - 3 + round(snek.beenAlive / 1000, 3) - snek.deathPenalty
+            ])
 
     def make_new_snakes(self, dead_snakes):
         self.snakes = dead_snakes
@@ -104,15 +115,24 @@ class SnakeGame():
         self.UI.showPlots(self.screen, self.longest, self.avgs, self.gen, avg)
 
     def save_all_models(self):
-        path = "games/model"
         c = 0
+        pd.DataFrame(self.snake_data,
+                     columns=[
+                         'generation',
+                         'snake_brain_num',
+                         'snake_size',
+                         'snake_lifespan_left',
+                         'snake_lifespan',
+                         'snake_fitness'
+                     ]).to_csv(self.rec_path + self.model_name + "stats.csv"),
+
         for m in self.maps:
-            m.saveSnakes(path, c)
+            m.saveSnakes(self.rec_path + self.model_name, c)
             c += self.number_of_food_per_map
 
     def load_all_models(self):
         snakes = []
-        path = "games/"
+        path = self.rec_path
         for (dirpath, dirnames, filenames) in os.walk(path):
             for i, file in enumerate(filenames):
                 snakes.append(Snake(file=path + file))

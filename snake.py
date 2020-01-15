@@ -112,7 +112,7 @@ class Snake():
                 input.append(i[1])
             # moving dir
             input.append(self.lastDir)
-            pred = self.model.predict([[input]])
+            pred = self.model.predict([input])
 
         elif self.brain_num == 2:
             sitrep = grid.areaAt(self.parts[0][0], self.parts[0][1], 4)  # shape (9,9,1)

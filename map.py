@@ -194,7 +194,7 @@ class Map():
             snake.draw(screen, xOnScreen, yOnScreen, self.cellSize)
 
     def isInGrid(self, x, y):
-        return -1 <= x < self.x and -1 <= y < self.y
+        return 0 <= x < self.x and 0 <= y < self.y
 
     def at(self, x, y):
         return self.grid[x][y]
