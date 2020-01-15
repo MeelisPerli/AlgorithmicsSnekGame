@@ -65,10 +65,9 @@ class Snake():
 
     def brain3(self):
         self.model = Sequential()
-        self.model.add(Dense(21, input_shape = (7,), activation='tanh'))
-        self.model.add(Dense(35, activation='tanh'))
-        self.model.add(Dense(12, activation='tanh'))
-        self.model.add(Dense(34, activation='sigmoid'))
+        self.model.add(Input(shape=(7,)))
+        self.model.add(Dense(9, activation='relu'))
+        self.model.add(Dense(15, activation='relu'))
         self.model.add(Dense(4, activation='softmax'))
 
     # idk if this is required anymore
@@ -129,7 +128,7 @@ class Snake():
                     input.append(1)
                 else:
                     input.append(0)
-            pred = self.model.predict([[input]])
+            pred = self.model.predict([input])
 
         elif self.brain_num == 3:
             sitrep = grid.sitrep((self))
