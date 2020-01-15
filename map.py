@@ -207,18 +207,14 @@ class Map():
         else:
             return 1
 
-    def saveSnakes(self):
-        path = "games/model"
-        i = 0
+    def saveSnakes(self, path):
         for s in self.aliveSnakes:
-            s.save(path + str(i) + ".h5")
-            i += 1
+            s.save(path)
         for s in self.deadSnakes:
-            s.save(path + str(i) + ".h5")
-            i += 1
+            s.save(path)
         print("Models saved!")
 
-    def loadSnakes(self):
+    def loadSnakes(self, path):
         path = "games/"
         snakes = self.deadSnakes + self.aliveSnakes
         nOfSnakes = len(snakes)

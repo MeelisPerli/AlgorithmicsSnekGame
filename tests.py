@@ -5,7 +5,6 @@ from snake import *
 from copy import deepcopy
 from geneticalgorithm import *
 
-
 class TestGAMethods(unittest.TestCase):
 
     def testMatrixOperations(self):
