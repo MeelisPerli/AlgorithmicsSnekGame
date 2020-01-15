@@ -103,7 +103,7 @@ class SnakeGame():
 
     def make_new_snakes(self, dead_snakes):
         self.snakes = dead_snakes
-        long, avg = self.GA.mutate_snakes(self.snakes, self.parent_pairs, self.children_per_parent_pair,
+        long, avg = self.GA.mutate_snakes(self.snakes, self.parent_pairs*2, self.children_per_parent_pair,
                                           self.mut_chance)
         self.longest.append(long)
         self.avgs.append(avg)
